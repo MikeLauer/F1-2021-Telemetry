@@ -1,11 +1,12 @@
 # Leaderboard for F1 2021
 Leaderboard with additional information based on the telemetry information provided by the game. Great to use as a commentator or driver on the second screen.
 
-Most data is provided by the game. Some, however, are calculated by the program:
+Most data is provided by the game. Some, however, are calculated by the program itself:
 - The "Estimated position after pitstop" in the driver circle. It is tenth a second accurate but it's precision heavily depends on the pitstop delta that can be set.
-- The gaps are computed by the program itself as well. If a driver hasn't passed a measure point yet, no gap time will be shown.
+- The gaps between the cars. If a driver hasn't passed a measure point yet, no gap time will be shown.
 
-The UI is designed for 1080p screens. Higher resolutions are no problem and the driver circle adjusts it's size respectively. Lower resolutions will not work properly.
+Please note:
+The UI is designed for 1080p screens. Higher resolutions are no problem and the driver circle adjusts it's size respectively. Lower resolutions will not work properly. It is currently designed for 20 players, so multiplayer sessions with 22 drivers or the my team mode will probably cause problems!
 
 ### Screenshot Qualifying
 ![Screenshot Qualifying](https://github.com/MikeLauer/F1-2021-Telemetry/blob/master/Screenshots/screenshot.JPG)
