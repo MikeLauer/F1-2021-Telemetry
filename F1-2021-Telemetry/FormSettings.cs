@@ -22,6 +22,8 @@ namespace F1_2021_Telemetry
 
         private void FormSettings_Load(object sender, EventArgs e)
         {
+            cb_liveTimings.Checked = this.MainForm.getLiveTimingEnabled();
+
             DataGridView leaderboardTable = MainForm.getLeaderboardGridView();
             cb_show_lapNumber.Checked = leaderboardTable.Columns[3].Visible;
             cb_show_bestLap.Checked = leaderboardTable.Columns[4].Visible;
@@ -38,6 +40,12 @@ namespace F1_2021_Telemetry
             cb_show_tyre.Checked = leaderboardTable.Columns[19].Visible;
             cb_show_positionDifference.Checked = leaderboardTable.Columns[20].Visible;
             cb_show_timePenalties.Checked = leaderboardTable.Columns[21].Visible;
+
+            if (this.MainForm.HighLightOtherPlayers) rb_playerHighlight_everyone.Checked = true;
+            else if (this.MainForm.HighlightOwnPlayer) rb_playerHighlight_onlyMe.Checked = true;
+            else rb_playerHighlight_off.Checked = true;
+
+            cb_performanceMode.Checked = this.MainForm.PerformanceMode;
         }
 
         private void button_save_Click(object sender, EventArgs e)
@@ -132,21 +140,36 @@ namespace F1_2021_Telemetry
         private void cb_performanceMode_CheckedChanged(object sender, EventArgs e)
         {
             this.MainForm.PerformanceMode = cb_performanceMode.Checked;
-            cb_highlightPlayer.Enabled = !this.cb_performanceMode.Checked;
+            rb_playerHighlight_off.Enabled = !this.cb_performanceMode.Checked;
+            rb_playerHighlight_onlyMe.Enabled = !this.cb_performanceMode.Checked;
+            rb_playerHighlight_everyone.Enabled = !this.cb_performanceMode.Checked;
             if (this.cb_performanceMode.Checked)
             {
                 this.MainForm.ClearTableColoring();
             }
         }
 
-        private void cb_highlightPlayer_CheckedChanged(object sender, EventArgs e)
-        {
-            this.MainForm.HighlightHumanPlayers = cb_highlightPlayer.Checked;
-        }
-
         private void cb_liveTimings_CheckedChanged(object sender, EventArgs e)
         {
             this.MainForm.SetLiveTimingEnabled(cb_liveTimings.Checked);
+        }
+
+        private void rb_playerHighlight_off_CheckedChanged(object sender, EventArgs e)
+        {
+            this.MainForm.HighlightOwnPlayer = false;
+            this.MainForm.HighLightOtherPlayers = false;
+        }
+
+        private void rb_playerHighlight_onlyMe_CheckedChanged(object sender, EventArgs e)
+        {
+            this.MainForm.HighlightOwnPlayer = true;
+            this.MainForm.HighLightOtherPlayers = false;
+        }
+
+        private void rb_playerHighlight_everyone_CheckedChanged(object sender, EventArgs e)
+        {
+            this.MainForm.HighlightOwnPlayer = true;
+            this.MainForm.HighLightOtherPlayers = true;
         }
     }
 }

@@ -46,15 +46,19 @@ namespace F1_2021_Telemetry
             this.cb_show_lapNumber = new System.Windows.Forms.CheckBox();
             this.button_save = new System.Windows.Forms.Button();
             this.cb_show_timePenalties = new System.Windows.Forms.CheckBox();
-            this.cb_highlightPlayer = new System.Windows.Forms.CheckBox();
             this.cb_liveTimings = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.cb_performanceMode = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.rb_playerHighlight_off = new System.Windows.Forms.RadioButton();
+            this.rb_playerHighlight_onlyMe = new System.Windows.Forms.RadioButton();
+            this.rb_playerHighlight_everyone = new System.Windows.Forms.RadioButton();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // cb_show_deltaBestInterval
@@ -270,7 +274,7 @@ namespace F1_2021_Telemetry
             // button_save
             // 
             this.button_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_save.Location = new System.Drawing.Point(271, 427);
+            this.button_save.Location = new System.Drawing.Point(271, 511);
             this.button_save.Name = "button_save";
             this.button_save.Size = new System.Drawing.Size(121, 36);
             this.button_save.TabIndex = 78;
@@ -293,21 +297,6 @@ namespace F1_2021_Telemetry
             this.cb_show_timePenalties.UseVisualStyleBackColor = true;
             this.cb_show_timePenalties.CheckedChanged += new System.EventHandler(this.cb_show_timePenalties_CheckedChanged);
             // 
-            // cb_highlightPlayer
-            // 
-            this.cb_highlightPlayer.AutoSize = true;
-            this.cb_highlightPlayer.Checked = true;
-            this.cb_highlightPlayer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_highlightPlayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_highlightPlayer.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.cb_highlightPlayer.Location = new System.Drawing.Point(21, 42);
-            this.cb_highlightPlayer.Name = "cb_highlightPlayer";
-            this.cb_highlightPlayer.Size = new System.Drawing.Size(141, 17);
-            this.cb_highlightPlayer.TabIndex = 81;
-            this.cb_highlightPlayer.Text = "Highlight Human Players";
-            this.cb_highlightPlayer.UseVisualStyleBackColor = true;
-            this.cb_highlightPlayer.CheckedChanged += new System.EventHandler(this.cb_highlightPlayer_CheckedChanged);
-            // 
             // cb_liveTimings
             // 
             this.cb_liveTimings.AutoSize = true;
@@ -324,10 +313,9 @@ namespace F1_2021_Telemetry
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.cb_liveTimings);
-            this.groupBox1.Controls.Add(this.cb_highlightPlayer);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(380, 84);
+            this.groupBox1.Size = new System.Drawing.Size(380, 59);
             this.groupBox1.TabIndex = 84;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Information";
@@ -335,7 +323,7 @@ namespace F1_2021_Telemetry
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.cb_performanceMode);
-            this.groupBox2.Location = new System.Drawing.Point(12, 330);
+            this.groupBox2.Location = new System.Drawing.Point(12, 414);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(380, 91);
             this.groupBox2.TabIndex = 85;
@@ -374,18 +362,66 @@ namespace F1_2021_Telemetry
             this.groupBox3.Controls.Add(this.cb_show_positionDifference);
             this.groupBox3.Controls.Add(this.cb_show_lastLap);
             this.groupBox3.Controls.Add(this.cb_show_gapLeader);
-            this.groupBox3.Location = new System.Drawing.Point(12, 102);
+            this.groupBox3.Location = new System.Drawing.Point(12, 186);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(380, 222);
             this.groupBox3.TabIndex = 86;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Table Column Visibility";
             // 
+            // rb_playerHighlight_off
+            // 
+            this.rb_playerHighlight_off.AutoSize = true;
+            this.rb_playerHighlight_off.Location = new System.Drawing.Point(20, 19);
+            this.rb_playerHighlight_off.Name = "rb_playerHighlight_off";
+            this.rb_playerHighlight_off.Size = new System.Drawing.Size(39, 17);
+            this.rb_playerHighlight_off.TabIndex = 84;
+            this.rb_playerHighlight_off.Text = "Off";
+            this.rb_playerHighlight_off.UseVisualStyleBackColor = true;
+            this.rb_playerHighlight_off.CheckedChanged += new System.EventHandler(this.rb_playerHighlight_off_CheckedChanged);
+            // 
+            // rb_playerHighlight_onlyMe
+            // 
+            this.rb_playerHighlight_onlyMe.AutoSize = true;
+            this.rb_playerHighlight_onlyMe.Location = new System.Drawing.Point(20, 42);
+            this.rb_playerHighlight_onlyMe.Name = "rb_playerHighlight_onlyMe";
+            this.rb_playerHighlight_onlyMe.Size = new System.Drawing.Size(64, 17);
+            this.rb_playerHighlight_onlyMe.TabIndex = 85;
+            this.rb_playerHighlight_onlyMe.Text = "Only Me";
+            this.rb_playerHighlight_onlyMe.UseVisualStyleBackColor = true;
+            this.rb_playerHighlight_onlyMe.CheckedChanged += new System.EventHandler(this.rb_playerHighlight_onlyMe_CheckedChanged);
+            // 
+            // rb_playerHighlight_everyone
+            // 
+            this.rb_playerHighlight_everyone.AutoSize = true;
+            this.rb_playerHighlight_everyone.Checked = true;
+            this.rb_playerHighlight_everyone.Location = new System.Drawing.Point(20, 65);
+            this.rb_playerHighlight_everyone.Name = "rb_playerHighlight_everyone";
+            this.rb_playerHighlight_everyone.Size = new System.Drawing.Size(70, 17);
+            this.rb_playerHighlight_everyone.TabIndex = 86;
+            this.rb_playerHighlight_everyone.TabStop = true;
+            this.rb_playerHighlight_everyone.Text = "Everyone";
+            this.rb_playerHighlight_everyone.UseVisualStyleBackColor = true;
+            this.rb_playerHighlight_everyone.CheckedChanged += new System.EventHandler(this.rb_playerHighlight_everyone_CheckedChanged);
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.rb_playerHighlight_off);
+            this.groupBox4.Controls.Add(this.rb_playerHighlight_everyone);
+            this.groupBox4.Controls.Add(this.rb_playerHighlight_onlyMe);
+            this.groupBox4.Location = new System.Drawing.Point(12, 77);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(380, 103);
+            this.groupBox4.TabIndex = 87;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Highlight Human Players";
+            // 
             // FormSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(404, 475);
+            this.ClientSize = new System.Drawing.Size(404, 561);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox1);
@@ -403,6 +439,8 @@ namespace F1_2021_Telemetry
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -425,11 +463,14 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.CheckBox cb_show_lapNumber;
         private System.Windows.Forms.Button button_save;
         private System.Windows.Forms.CheckBox cb_show_timePenalties;
-        private System.Windows.Forms.CheckBox cb_highlightPlayer;
         private System.Windows.Forms.CheckBox cb_liveTimings;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox cb_performanceMode;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.RadioButton rb_playerHighlight_off;
+        private System.Windows.Forms.RadioButton rb_playerHighlight_onlyMe;
+        private System.Windows.Forms.RadioButton rb_playerHighlight_everyone;
+        private System.Windows.Forms.GroupBox groupBox4;
     }
 }

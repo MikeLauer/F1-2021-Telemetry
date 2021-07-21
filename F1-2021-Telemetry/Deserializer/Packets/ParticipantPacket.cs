@@ -83,7 +83,13 @@ namespace Codemasters.F1_2021
 
                 //Get name
                 byte[] byteName = BAM.NextBytes(48);
-                ReturnInstance.Name = Encoding.UTF8.GetString(byteName); // UTF-8
+                List<Byte> byteNameTrim = new List<byte>();
+                for(int i = 0; i < 48; i++)
+                {
+                    if (byteName[i] == 0) break;
+                    byteNameTrim.Add(byteName[i]);
+                }
+                ReturnInstance.Name = Encoding.UTF8.GetString(byteNameTrim.ToArray()).Trim(); // UTF-8
 /*
                 string FullName = "";
                 int t = 1;

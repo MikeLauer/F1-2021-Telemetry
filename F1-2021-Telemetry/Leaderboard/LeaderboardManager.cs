@@ -65,15 +65,13 @@ namespace F1_2021_Telemetry
         /// <param name="lapPacket"></param>
         /// <param name="carStatusPacket"></param>
         /// <param name="sessionPacket"></param>
-        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket, SessionHistoryPacket sessionHistoryPacket)
+        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket)
         {
             this.LastLapPacket = this.LapPacket;
             this.LapPacket = lapPacket;
             this.ParticipantPacket = participantPacket;
             this.SessionPacket = sessionPacket;
-            this.CarStatusPacket = carStatusPacket;
-            if(sessionHistoryPacket.CarIndex < this.SessionHistoryPackets.Length) // F1 2020/21 have 22 drivers. I consider only 20 right now
-                this.SessionHistoryPackets[sessionHistoryPacket.CarIndex] = sessionHistoryPacket;
+            this.CarStatusPacket = carStatusPacket;           
 
             for (int i = 0; i < NumberOfDrivers; i++) // for each driver
             {
@@ -82,6 +80,12 @@ namespace F1_2021_Telemetry
                 if (sessionPacket.SessionTypeMode == SessionPacket.SessionType.Race) // If session type is 'Race' compute distances
                     this.SetTimestampForGapCalculation(sessionPacket, lapPacket, i); // Gaps
             }
+        }
+
+        public void UpdateHistoryPacket(SessionHistoryPacket sessionHistoryPacket)
+        {
+            if (this.SessionHistoryPackets != null && sessionHistoryPacket.CarIndex < this.SessionHistoryPackets.Length) // F1 2020/21 have 22 drivers. I consider only 20 right now
+                this.SessionHistoryPackets[sessionHistoryPacket.CarIndex] = sessionHistoryPacket;
         }
 
         /// <summary>
@@ -133,7 +137,7 @@ namespace F1_2021_Telemetry
 
                 driver.CarPosition = this.LapPacket.FieldLapData[i].CarPosition; // Set car position
 
-                driver.DriverName = this.ParticipantPacket.FieldParticipantData[i].Name; // Set driver name
+                driver.DriverName = this.ParticipantPacket.FieldParticipantData[i].Name + " " + this.ParticipantPacket.FieldParticipantData[i].NetworkId; // Set driver name
 
                 driver.CurrentLapNumber = this.LapPacket.FieldLapData[i].CurrentLapNumber.ToString(); // Current lap number                
 

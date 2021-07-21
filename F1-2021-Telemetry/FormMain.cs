@@ -47,7 +47,8 @@ namespace F1_2021_Telemetry
         private bool SettingsOpen = false; // Flag whether settings are open or not
 
         public bool PerformanceMode = false;
-        public bool HighlightHumanPlayers = true;
+        public bool HighlightOwnPlayer = true;
+        public bool HighLightOtherPlayers = true;
 
         public FormMain()
         {
@@ -128,7 +129,7 @@ namespace F1_2021_Telemetry
             WeatherForecastLabels[4] = label_weatherForecast30Min;
 
 
-            toolTip_performanceMode.SetToolTip(this.button_pitstopDeltaAuto, "Sets delta to recommended for current track");
+            toolTip_performanceMode.SetToolTip(this.button_pitstopDeltaAuto, "Sets delta to recommended for current track.\nNot updated to F1-2021 !");
         }
 
         public DataGridView getLeaderboardGridView()
@@ -144,11 +145,11 @@ namespace F1_2021_Telemetry
         /// <param name="carStatusPacket">CarStatusPacket</param>
         /// <param name="sessionPacket">SessionPacket</param>
         /// <param name="sessionHistoryPacket">SessionPacket</param>
-        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket, SessionHistoryPacket sessionHistoryPacket)
+        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket)
         {
             this.UpdateSession(sessionPacket); // Update session related information                
 
-            LeaderboardManager.UpdateData(participantPacket, lapPacket, carStatusPacket, sessionPacket, sessionHistoryPacket); // Update the LeaderboardManager
+            LeaderboardManager.UpdateData(participantPacket, lapPacket, carStatusPacket, sessionPacket); // Update the LeaderboardManager
             Leaderboard leaderboard = LeaderboardManager.getLeaderboard(); // Get Current Leaderboard
 
             if(leaderboard.TheoredicalBestLap != 0)
@@ -188,7 +189,8 @@ namespace F1_2021_Telemetry
 
                         dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
 
-                        if (!PerformanceMode) this.ColorDriverRow(driver, participantPacket, i); // Color the information of the driver
+                        bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && (driver.Index == participantPacket.PlayerCarIndex || (sessionPacket.IsSpectating && driver.Index == sessionPacket.CarIndexBeingSpectated)));
+                        if (!PerformanceMode) this.ColorDriverRow(driver, participantPacket, i, highlight); // Color the information of the driver
                     }
                 }); // end table editing
             }
@@ -199,6 +201,11 @@ namespace F1_2021_Telemetry
             }
         }
 
+        public void UpdateHistoryPacket(SessionHistoryPacket sessionHistoryPacket)
+        {
+            this.LeaderboardManager.UpdateHistoryPacket(sessionHistoryPacket);
+        }
+
         /// <summary>
         /// Color certain columns of a driver row. 
         /// 
@@ -207,14 +214,14 @@ namespace F1_2021_Telemetry
         /// <param name="driver"></param>
         /// <param name="participantPacket"></param>
         /// <param name="index"></param>
-        private void ColorDriverRow(LeaderboardDriver driver, ParticipantPacket participantPacket, int index)
+        private void ColorDriverRow(LeaderboardDriver driver, ParticipantPacket participantPacket, int index, bool highlightPlayer = false)
         {
             Color BlackOrGray = (index % 2 == 0) ? Color.Black : GlobalColorGray;
             DataGridViewRow driversRow = dataGridView_leaderboard.Rows[index];
 
             driversRow.Cells[0].Style.BackColor = driver.TeamColor; // Color the team color cell
 
-            if (participantPacket.FieldParticipantData[driver.Index].IsAiControlled == false && HighlightHumanPlayers) // Driver is human player
+            if (participantPacket.FieldParticipantData[driver.Index].IsAiControlled == false && highlightPlayer) // Driver is human player
             {
                 Color driverBackColor = Color.FromArgb((int)(driver.TeamColor.R * 0.5f), (int)(driver.TeamColor.G * 0.5f), (int)(driver.TeamColor.B * 0.5f)); // 50% of team color
 
@@ -444,6 +451,11 @@ namespace F1_2021_Telemetry
                 }
             }
 
+            label_session.Invoke((MethodInvoker)delegate ()
+            {
+                label_session.Text = sessionPacket.SessionTypeMode.ToString();
+            });
+
             label_track.Invoke((MethodInvoker)delegate ()
             {
                 label_track.Text = sessionPacket.SessionTrack.ToString(); // Set track name
@@ -551,6 +563,11 @@ namespace F1_2021_Telemetry
         public void SetLiveTimingEnabled(bool enabled)
         {
             LeaderboardManager.LiveTiming = enabled;
+        }
+
+        public bool getLiveTimingEnabled()
+        {
+            return LeaderboardManager.LiveTiming;
         }
 
 

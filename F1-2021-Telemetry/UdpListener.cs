@@ -128,16 +128,16 @@ namespace F1_2021_Telemetry
             {
                 SessionHistoryPacket = new SessionHistoryPacket();
                 SessionHistoryPacket.LoadBytes(bytes);
+                Parent.UpdateHistoryPacket(SessionHistoryPacket);
             }
         }
-
         private void sendUpdate()
         {
-            if (ParticipantPacket != null && LapPacket != null && CarStatusPacket != null && SessionPacket != null && SessionHistoryPacket != null)
+            if (ParticipantPacket != null && LapPacket != null && CarStatusPacket != null && SessionPacket != null)
             {
                 //Parent.AddPacketsToQueue(packets);
                 if (Parent != null)
-                    Parent.UpdateData(ParticipantPacket, LapPacket, CarStatusPacket, SessionPacket, SessionHistoryPacket);
+                    Parent.UpdateData(ParticipantPacket, LapPacket, CarStatusPacket, SessionPacket);
             }
         }
     }

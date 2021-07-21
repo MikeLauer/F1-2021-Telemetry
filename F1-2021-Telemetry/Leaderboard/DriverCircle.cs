@@ -14,7 +14,7 @@ namespace F1_2021_Telemetry
     /// </summary>
     class DriverCircle
     {
-        public static readonly float[] TrackPitstopDelta = { 22.5f, 25.0f /*No data*/, 23.0f, 24.6f, 22.5f, 25.0f, 23.6f, 24.7f, 25.0f /*No data*/, 22.0f, 23.0f, 25.0f, 29.2f, 23.5f, 22.0f, 25.0f /*No data*/, 24.5f, 22.5f, 30.5f, 22.8f, 25.0f /*No data*/ };
+        public static readonly float[] TrackPitstopDelta = { 22.5f, 25.0f /*No data*/, 23.0f, 24.6f, 22.5f, 25.0f, 23.6f, 24.7f, 25.0f /*No data*/, 22.0f, 23.0f, 25.0f, 29.2f, 23.5f, 22.0f, 25.0f /*No data*/, 24.5f, 22.5f, 30.5f, 22.8f, 25.0f /*No data*/, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f };
 
         private float[] DriverLapTimeMeter; // Meter in lap at certain point of time. 10th second accuracy
 

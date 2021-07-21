@@ -54,7 +54,7 @@ namespace F1_2021_Telemetry
         static readonly Color[] ForeColorCoding = { Color.White, Color.Yellow, Color.LimeGreen, Color.Purple };
         static readonly Color[] BackColorCodingEven = { Color.Black, Color.Yellow, Color.LimeGreen, Color.Purple };
         static readonly Color[] BackColorCodingOdd = { Color.FromArgb(50,50,50) , Color.Yellow, Color.LimeGreen, Color.Purple };
-        static readonly Color[] TeamColors = { Color.FromArgb(00, 210, 90), Color.FromArgb(220, 0, 0), Color.FromArgb(6, 0, 239), Color.FromArgb(0, 90, 255), Color.FromArgb(0, 111, 98), Color.FromArgb(0, 144, 255), Color.FromArgb(43, 69, 98), Color.FromArgb(255, 255, 255), Color.FromArgb(255, 135, 0), Color.FromArgb(144, 0, 0) };
+        static readonly Color[] TeamColors = { Color.FromArgb(00, 210, 190), Color.FromArgb(220, 0, 0), Color.FromArgb(6, 0, 239), Color.FromArgb(0, 90, 255), Color.FromArgb(0, 111, 98), Color.FromArgb(0, 144, 255), Color.FromArgb(43, 69, 98), Color.FromArgb(255, 255, 255), Color.FromArgb(255, 135, 0), Color.FromArgb(144, 0, 0) };
 
         public byte Index; // Index of the original order
 
