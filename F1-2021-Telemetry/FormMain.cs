@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using Codemasters.F1_2021;
 using System.Timers;
 using System.Reflection;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace F1_2021_Telemetry
 {
@@ -152,7 +153,7 @@ namespace F1_2021_Telemetry
             LeaderboardManager.UpdateData(participantPacket, lapPacket, carStatusPacket, sessionPacket); // Update the LeaderboardManager
             Leaderboard leaderboard = LeaderboardManager.getLeaderboard(); // Get Current Leaderboard
 
-            if(leaderboard.TheoredicalBestLap != 0)
+            if (leaderboard.TheoredicalBestLap != 0)
             {
                 label_theoredicalBestLap.Invoke((MethodInvoker)delegate ()
                 {
@@ -191,6 +192,7 @@ namespace F1_2021_Telemetry
 
                         bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && (driver.Index == participantPacket.PlayerCarIndex || (sessionPacket.IsSpectating && driver.Index == sessionPacket.CarIndexBeingSpectated)));
                         if (!PerformanceMode) this.ColorDriverRow(driver, participantPacket, i, highlight); // Color the information of the driver
+                        if (driver.Index == lapPacket.PlayerCarIndex) this.PlotLapTimeGraph(this.LeaderboardManager.GetSessionHistories(), leaderboard, driver);
                     }
                 }); // end table editing
             }
@@ -341,6 +343,142 @@ namespace F1_2021_Telemetry
         }
 
         /// <summary>
+        /// Plot the last 10 lap times of the driver (and the driver in front/back)
+        /// </summary>
+        /// <param name="sessionHistoryPackets"></param>
+        /// <param name="leaderboard"></param>
+        /// <param name="driver"></param>
+        private void PlotLapTimeGraph(SessionHistoryPacket[] sessionHistoryPackets, Leaderboard leaderboard, LeaderboardDriver driver)
+        {
+            if (sessionHistoryPackets[driver.Index] == null)
+            {
+                return; // If no history data for self
+            }
+
+            List<double> lapTimesSelf = new List<double>();
+            List<double> lapTimesFront = new List<double>();
+            List<double> lapTimesBehind = new List<double>();
+
+
+            LeaderboardDriver driverFront = null;
+            if (driver.CarPosition > 1)
+                driverFront = leaderboard.DriverData[driver.CarPosition - 2];
+
+            LeaderboardDriver driverBehind = null;
+            if (driver.CarPosition < 20)
+                driverBehind = leaderboard.DriverData[driver.CarPosition];
+
+            bool driverFrontValid = driverFront != null && sessionHistoryPackets[driverFront.Index] != null; // whether a driver in front exists (and its data)
+            bool driverBehindValid = driverBehind != null && sessionHistoryPackets[driverBehind.Index] != null; // whether a driver behind exists (and its data)
+
+            int lapStartIndex = driver.CurrentLapNumber > 10 ? driver.CurrentLapNumber - 10 - 1 : 0; // Current lap number - 10
+
+            for(int i = 0; i < lapStartIndex; i++) // Offset of lines in graph so the laps are visibile and in the right spot
+            {
+                lapTimesSelf.Add(0);
+                lapTimesFront.Add(0); 
+                lapTimesBehind.Add(0);
+            }
+
+            double min = 1000; // min lap time
+            double max = 0; // max lap time
+
+            for (int i = lapStartIndex; i < lapStartIndex + 10; i++) // for each lap
+            {
+                // Self
+                double lapTime = sessionHistoryPackets[driver.Index].LapsHistoryData[i].LapTimeInMs / 1000.0; // Lap time in seconds
+                if(lapTime != 0)
+                    lapTimesSelf.Add(lapTime); // Add time to list
+
+                if (lapTime > max)
+                {
+                    max = lapTime;
+                }
+                if (lapTime < min && lapTime > 0)
+                {
+                    min = lapTime;
+                }
+
+
+                // Driver in front
+                if (driverFrontValid)
+                {
+                    lapTime = sessionHistoryPackets[driverFront.Index].LapsHistoryData[i].LapTimeInMs / 1000.0;
+                    if (lapTime != 0)
+                        lapTimesFront.Add(lapTime);
+                    if (lapTime > max)
+                    {
+                        max = lapTime;
+                    }
+                    if (lapTime < min && lapTime > 0)
+                    {
+                        min = lapTime;
+                    }
+                }
+
+                // Driver behind
+                if (driverBehindValid)
+                {
+                    lapTime = sessionHistoryPackets[driverBehind.Index].LapsHistoryData[i].LapTimeInMs / 1000.0;
+                    if (lapTime != 0)
+                        lapTimesBehind.Add(lapTime);
+                    if (lapTime > max)
+                    {
+                        max = lapTime;
+                    }
+                    if (lapTime < min && lapTime > 0)
+                    {
+                        min = lapTime;
+                    }
+                }
+            }
+
+            // Create series for self
+            Series selfSeries = new Series("Self");
+            selfSeries.Points.DataBindY(lapTimesSelf.ToArray()); // Convert list to data points
+            selfSeries.ChartType = SeriesChartType.FastLine;
+            selfSeries.Color = driver.TeamColor;
+            selfSeries.BorderWidth = 6; // Own line thicker than the others
+
+            Series driverFrontSeries = new Series("Front");
+            if (driverFrontValid)
+            {
+                driverFrontSeries.Points.DataBindY(lapTimesFront.ToArray());
+                driverFrontSeries.ChartType = SeriesChartType.FastLine;
+                driverFrontSeries.Color = driverFront.TeamColor;
+                driverFrontSeries.BorderWidth = 3;
+            }
+
+            Series driverBehindSeries = new Series("Behind");
+            if (driverBehindValid)
+            {
+                driverBehindSeries.Points.DataBindY(lapTimesBehind.ToArray());
+                driverBehindSeries.ChartType = SeriesChartType.FastLine;
+                driverBehindSeries.Color = driverBehind.TeamColor;
+                driverBehindSeries.BorderWidth = 3;
+            }
+
+            // Add each series to the chart
+            chart1.Series.Clear();
+            chart1.Series.Add(selfSeries);
+            chart1.Series.Add(driverFrontSeries);
+            chart1.Series.Add(driverBehindSeries);
+
+            min = Math.Floor(min);
+            max = Math.Ceiling(max);
+
+            // Additional styling
+            chart1.ResetAutoValues();
+            chart1.Titles.Clear();
+            chart1.ChartAreas[0].AxisY.Interval = Math.Round((max - min) / 5.0,0);
+            chart1.ChartAreas[0].AxisX.Interval = 1;
+            chart1.ChartAreas[0].AxisY.Minimum = min - 1;
+            chart1.ChartAreas[0].AxisY.Maximum = max + 1;
+            chart1.ChartAreas[0].AxisX.Minimum = lapStartIndex + 1;
+            chart1.ChartAreas[0].AxisX.Maximum = lapStartIndex + 10;
+        }
+
+        /// <summary>
         /// Updates the labels for gaps of driver ahead, behind and the leader.
         /// </summary>
         /// <param name="leaderboard"></param>
@@ -422,7 +560,7 @@ namespace F1_2021_Telemetry
 
             for (int i = 0; i < 21; i++) // For every marshalzone set color
             {
-                if (i+1 > sessionPacket.NumberOfMarshallZones)
+                if (i + 1 > sessionPacket.NumberOfMarshallZones)
                 {
                     MarshalZoneLabels[i].BackColor = Color.Transparent;
                 }
@@ -492,14 +630,15 @@ namespace F1_2021_Telemetry
                 label_pitstopPositionAfter.Text = sessionPacket.PitStopRejoinPosition.ToString(); // Estimated position after pit stop
             });
 
-            if(sessionPacket.CurrentSafetyCarStatus != SessionPacket.SafetyCarStatus.None)
+            if (sessionPacket.CurrentSafetyCarStatus != SessionPacket.SafetyCarStatus.None)
             {
                 label_safetyCar.Invoke((MethodInvoker)delegate ()
                 {
                     label_safetyCar.Text = sessionPacket.CurrentSafetyCarStatus.ToString();
                 });
                 SafetyCarBlinkTimer.Start();
-            } else
+            }
+            else
             {
                 SafetyCarBlinkTimer.Stop();
                 label_safetyCar.Invoke((MethodInvoker)delegate ()
@@ -519,7 +658,7 @@ namespace F1_2021_Telemetry
                 {
                     rainPercentage = sessionPacket.WeatherForecastSamples[i].RainPercentage + "%";
                     weatherForecast = sessionPacket.WeatherForecastSamples[i].ForecastedWeatherCondition.ToString();
-                } 
+                }
                 else
                 {
                     rainPercentage = "-";
@@ -598,6 +737,11 @@ namespace F1_2021_Telemetry
                 numeric_pitstopDelta.Location = new Point(pb_driverCircle.Location.X - 90, numeric_pitstopDelta.Location.Y); // Move pitstopDeltaInput next to driver circle
                 button_pitstopDeltaAuto.Location = new Point(pb_driverCircle.Location.X - 90, button_pitstopDeltaAuto.Location.Y); // Move pitstopDeltaAutoCheckbox next to driver circle
             }
+            if(gp_lapTimes.Width > 10)
+            {
+                gp_lapTimes.Width = pb_driverCircle.Location.X - gp_lapTimes.Location.X - 5;
+                gp_lapTimes.Height = this.Height - gp_lapTimes.Location.Y - 51;
+            }
         }
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -663,11 +807,12 @@ namespace F1_2021_Telemetry
 
         private void OnSafetyCarBlink(object sender, ElapsedEventArgs e)
         {
-            if(label_safetyCar.BackColor != Color.Yellow)
+            if (label_safetyCar.BackColor != Color.Yellow)
             {
                 label_safetyCar.BackColor = Color.Yellow;
                 label_safetyCar.ForeColor = Color.Black;
-            } else
+            }
+            else
             {
                 label_safetyCar.BackColor = Color.Transparent;
                 label_safetyCar.ForeColor = Color.White;

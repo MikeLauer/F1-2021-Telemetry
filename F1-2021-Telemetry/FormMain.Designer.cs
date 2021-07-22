@@ -30,6 +30,9 @@ namespace F1_2021_Telemetry
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -131,6 +134,8 @@ namespace F1_2021_Telemetry
             this.label_rainPercentage10Min = new System.Windows.Forms.Label();
             this.label_text_weatherForecast5Min = new System.Windows.Forms.Label();
             this.label_rainPercentage5Min = new System.Windows.Forms.Label();
+            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.gp_lapTimes = new System.Windows.Forms.GroupBox();
             this.dataGridView_leaderboard = new F1_2021_Telemetry.DataGridViewDoubleBuffered();
             this.Team = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Pos = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -163,6 +168,8 @@ namespace F1_2021_Telemetry
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.gp_weatherForecast.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            this.gp_lapTimes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).BeginInit();
             this.SuspendLayout();
             // 
@@ -580,7 +587,7 @@ namespace F1_2021_Telemetry
             this.label_text_gapFront.AutoSize = true;
             this.label_text_gapFront.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_text_gapFront.ForeColor = System.Drawing.Color.White;
-            this.label_text_gapFront.Location = new System.Drawing.Point(300, 28);
+            this.label_text_gapFront.Location = new System.Drawing.Point(295, 28);
             this.label_text_gapFront.Name = "label_text_gapFront";
             this.label_text_gapFront.Size = new System.Drawing.Size(75, 29);
             this.label_text_gapFront.TabIndex = 42;
@@ -591,7 +598,7 @@ namespace F1_2021_Telemetry
             this.label_text_gapBack.AutoSize = true;
             this.label_text_gapBack.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_text_gapBack.ForeColor = System.Drawing.Color.White;
-            this.label_text_gapBack.Location = new System.Drawing.Point(300, 69);
+            this.label_text_gapBack.Location = new System.Drawing.Point(295, 69);
             this.label_text_gapBack.Name = "label_text_gapBack";
             this.label_text_gapBack.Size = new System.Drawing.Size(72, 29);
             this.label_text_gapBack.TabIndex = 44;
@@ -601,7 +608,7 @@ namespace F1_2021_Telemetry
             // 
             this.label_gapFront.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_gapFront.ForeColor = System.Drawing.Color.White;
-            this.label_gapFront.Location = new System.Drawing.Point(380, 28);
+            this.label_gapFront.Location = new System.Drawing.Point(375, 28);
             this.label_gapFront.Name = "label_gapFront";
             this.label_gapFront.Size = new System.Drawing.Size(106, 31);
             this.label_gapFront.TabIndex = 43;
@@ -612,7 +619,7 @@ namespace F1_2021_Telemetry
             // 
             this.label_gapBack.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_gapBack.ForeColor = System.Drawing.Color.White;
-            this.label_gapBack.Location = new System.Drawing.Point(380, 69);
+            this.label_gapBack.Location = new System.Drawing.Point(375, 69);
             this.label_gapBack.Name = "label_gapBack";
             this.label_gapBack.Size = new System.Drawing.Size(106, 31);
             this.label_gapBack.TabIndex = 45;
@@ -738,9 +745,9 @@ namespace F1_2021_Telemetry
             this.gp_pitStop.Controls.Add(this.label_text_pitstopLatestLap);
             this.gp_pitStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gp_pitStop.ForeColor = System.Drawing.Color.White;
-            this.gp_pitStop.Location = new System.Drawing.Point(554, 914);
+            this.gp_pitStop.Location = new System.Drawing.Point(512, 914);
             this.gp_pitStop.Name = "gp_pitStop";
-            this.gp_pitStop.Size = new System.Drawing.Size(510, 115);
+            this.gp_pitStop.Size = new System.Drawing.Size(496, 115);
             this.gp_pitStop.TabIndex = 68;
             this.gp_pitStop.TabStop = false;
             this.gp_pitStop.Text = "Pit Stop";
@@ -756,9 +763,9 @@ namespace F1_2021_Telemetry
             this.gb_gaps.Controls.Add(this.label_gapFront);
             this.gb_gaps.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gb_gaps.ForeColor = System.Drawing.Color.White;
-            this.gb_gaps.Location = new System.Drawing.Point(554, 795);
+            this.gb_gaps.Location = new System.Drawing.Point(512, 795);
             this.gb_gaps.Name = "gb_gaps";
-            this.gb_gaps.Size = new System.Drawing.Size(510, 113);
+            this.gb_gaps.Size = new System.Drawing.Size(496, 113);
             this.gb_gaps.TabIndex = 69;
             this.gb_gaps.TabStop = false;
             this.gb_gaps.Text = "Gaps";
@@ -778,9 +785,9 @@ namespace F1_2021_Telemetry
             this.gb_sessionInfo.Controls.Add(this.label_trackTemp);
             this.gb_sessionInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gb_sessionInfo.ForeColor = System.Drawing.Color.White;
-            this.gb_sessionInfo.Location = new System.Drawing.Point(154, 795);
+            this.gb_sessionInfo.Location = new System.Drawing.Point(149, 795);
             this.gb_sessionInfo.Name = "gb_sessionInfo";
-            this.gb_sessionInfo.Size = new System.Drawing.Size(390, 234);
+            this.gb_sessionInfo.Size = new System.Drawing.Size(358, 234);
             this.gb_sessionInfo.TabIndex = 70;
             this.gb_sessionInfo.TabStop = false;
             this.gb_sessionInfo.Text = "Session Info";
@@ -852,7 +859,7 @@ namespace F1_2021_Telemetry
             this.groupBox1.Size = new System.Drawing.Size(133, 141);
             this.groupBox1.TabIndex = 72;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "v1.0.3";
+            this.groupBox1.Text = "v1.1.0";
             // 
             // groupBox2
             // 
@@ -916,9 +923,9 @@ namespace F1_2021_Telemetry
             this.gp_weatherForecast.Controls.Add(this.label_rainPercentage5Min);
             this.gp_weatherForecast.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gp_weatherForecast.ForeColor = System.Drawing.Color.White;
-            this.gp_weatherForecast.Location = new System.Drawing.Point(1074, 795);
+            this.gp_weatherForecast.Location = new System.Drawing.Point(1013, 795);
             this.gp_weatherForecast.Name = "gp_weatherForecast";
-            this.gp_weatherForecast.Size = new System.Drawing.Size(383, 234);
+            this.gp_weatherForecast.Size = new System.Drawing.Size(312, 234);
             this.gp_weatherForecast.TabIndex = 74;
             this.gp_weatherForecast.TabStop = false;
             this.gp_weatherForecast.Text = "Weather Forecast";
@@ -1087,6 +1094,58 @@ namespace F1_2021_Telemetry
             this.label_rainPercentage5Min.Size = new System.Drawing.Size(55, 24);
             this.label_rainPercentage5Min.TabIndex = 47;
             this.label_rainPercentage5Min.Text = "100%";
+            // 
+            // chart1
+            // 
+            this.chart1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            chartArea1.AxisX.IsInterlaced = true;
+            chartArea1.AxisX.IsLabelAutoFit = false;
+            chartArea1.AxisX.LabelStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            chartArea1.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea1.AxisX.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Transparent;
+            chartArea1.AxisX.MajorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisX.TitleForeColor = System.Drawing.Color.White;
+            chartArea1.AxisY.IsLabelAutoFit = false;
+            chartArea1.AxisY.LabelStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            chartArea1.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea1.AxisY.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisY.TitleForeColor = System.Drawing.Color.White;
+            chartArea1.BackColor = System.Drawing.Color.Gray;
+            chartArea1.BorderColor = System.Drawing.Color.Transparent;
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
+            this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            legend1.TitleForeColor = System.Drawing.Color.White;
+            this.chart1.Legends.Add(legend1);
+            this.chart1.Location = new System.Drawing.Point(3, 22);
+            this.chart1.Name = "chart1";
+            series1.BorderWidth = 5;
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
+            this.chart1.Size = new System.Drawing.Size(259, 209);
+            this.chart1.TabIndex = 75;
+            this.chart1.Text = "chart1";
+            // 
+            // gp_lapTimes
+            // 
+            this.gp_lapTimes.Controls.Add(this.chart1);
+            this.gp_lapTimes.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gp_lapTimes.ForeColor = System.Drawing.Color.White;
+            this.gp_lapTimes.Location = new System.Drawing.Point(1330, 795);
+            this.gp_lapTimes.MinimumSize = new System.Drawing.Size(11, 234);
+            this.gp_lapTimes.Name = "gp_lapTimes";
+            this.gp_lapTimes.Size = new System.Drawing.Size(265, 234);
+            this.gp_lapTimes.TabIndex = 76;
+            this.gp_lapTimes.TabStop = false;
+            this.gp_lapTimes.Text = "Lap Times";
             // 
             // dataGridView_leaderboard
             // 
@@ -1391,6 +1450,7 @@ namespace F1_2021_Telemetry
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.gp_lapTimes);
             this.Controls.Add(this.gp_weatherForecast);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -1426,6 +1486,8 @@ namespace F1_2021_Telemetry
             this.groupBox2.PerformLayout();
             this.gp_weatherForecast.ResumeLayout(false);
             this.gp_weatherForecast.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            this.gp_lapTimes.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1534,6 +1596,8 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.Label label_rainPercentage0Min;
         private System.Windows.Forms.Label label_text_session;
         private System.Windows.Forms.Label label_session;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.GroupBox gp_lapTimes;
     }
 }
 

@@ -62,7 +62,7 @@ namespace F1_2021_Telemetry
 
         public byte CarPosition; // Race position
         public string DriverName;
-        public String CurrentLapNumber = "0";
+        public byte CurrentLapNumber = 0;
 
         public uint BestLapTime = 0;
         public Color BestLapTimeColor;        

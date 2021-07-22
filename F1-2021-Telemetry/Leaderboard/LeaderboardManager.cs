@@ -137,9 +137,10 @@ namespace F1_2021_Telemetry
 
                 driver.CarPosition = this.LapPacket.FieldLapData[i].CarPosition; // Set car position
 
-                driver.DriverName = this.ParticipantPacket.FieldParticipantData[i].Name + " " + this.ParticipantPacket.FieldParticipantData[i].NetworkId; // Set driver name
+                driver.DriverName = this.ParticipantPacket.FieldParticipantData[i].Name; // Set driver name
+                if(this.ParticipantPacket.FieldParticipantData[i].NetworkId != 255) driver.DriverName += " " + this.ParticipantPacket.FieldParticipantData[i].NetworkId; // Set driver name
 
-                driver.CurrentLapNumber = this.LapPacket.FieldLapData[i].CurrentLapNumber.ToString(); // Current lap number                
+                driver.CurrentLapNumber = this.LapPacket.FieldLapData[i].CurrentLapNumber; // Current lap number                
 
                 driver.SetBestAndLastLapTime(0, this.LapPacket.FieldLapData[i].LastLapTimeInMs);
                 if (this.SessionHistoryPackets[i] != null) // History is known
@@ -467,6 +468,11 @@ namespace F1_2021_Telemetry
             }
 
             return leaderboard;
+        }
+
+        public SessionHistoryPacket[] GetSessionHistories()
+        {
+            return this.SessionHistoryPackets;
         }
     }
 }
