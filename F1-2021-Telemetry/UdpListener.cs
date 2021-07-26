@@ -36,24 +36,18 @@ namespace F1_2021_Telemetry
         public void Start()
         {
             Running = true;
-            this.Run2();
-            /*ThreadStart childref = new ThreadStart(Run);
-            Console.WriteLine("Creating the Listener thread");
-
-            Listener = new Thread(childref);
-            Listener.Start();*/
+            this.Run();
         }
         public void Stop()
         {
             if (Running)
             {
                 udpClient.Close();
-                //Listener.Abort();
             }
             Running = false;
         }
 
-        private void Run2()
+        private void Run()
         {
             Task.Run(async () =>
             {
@@ -69,32 +63,6 @@ namespace F1_2021_Telemetry
             });
         }
 
-        private void Run()
-        {
-            udpClient = new UdpClient(20777);
-            IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, 20777);
-
-            try
-            {               
-                while (Running)
-                {
-                    byte[] bytes = udpClient.Receive(ref groupEP);
-
-                    this.ProcessResult(bytes);
-                }
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("Error: " + e.ToString());
-            }
-            finally
-            {
-                udpClient.Close();
-            }
-            Console.WriteLine("Server off");
-
-        }
-
         private void ProcessResult(byte[] bytes)
         {
             Packet p = new Packet();
@@ -102,42 +70,36 @@ namespace F1_2021_Telemetry
 
             //Console.WriteLine(p.PacketType + " " + p.FrameIdentifier);
 
-
             if (p.PacketType == PacketType.Session) // 2/s
             {
                 SessionPacket = new SessionPacket();
                 SessionPacket.LoadBytes(bytes);
+                this.Parent.SessionPacket = SessionPacket;
             }
             else if (p.PacketType == PacketType.Lap) // Rate
             {
                 LapPacket = new LapPacket();
                 LapPacket.LoadBytes(bytes);
+                this.Parent.LapPacket = LapPacket;
             }
             else if (p.PacketType == PacketType.Participants) // 2/s
             {
                 ParticipantPacket = new ParticipantPacket();
                 ParticipantPacket.LoadBytes(bytes);
+                this.Parent.ParticipantPacket = ParticipantPacket;
             }
             else if (p.PacketType == PacketType.CarStatus) // Rate
             {
                 CarStatusPacket = new CarStatusPacket();
                 CarStatusPacket.LoadBytes(bytes);
-                this.sendUpdate();
+                this.Parent.CarStatusPacket = CarStatusPacket;
+                this.Parent.UpdateData();
             }
             else if(p.PacketType == PacketType.SessionHistory) // 1/s (one driver)
             {
                 SessionHistoryPacket = new SessionHistoryPacket();
                 SessionHistoryPacket.LoadBytes(bytes);
                 Parent.UpdateHistoryPacket(SessionHistoryPacket);
-            }
-        }
-        private void sendUpdate()
-        {
-            if (ParticipantPacket != null && LapPacket != null && CarStatusPacket != null && SessionPacket != null)
-            {
-                //Parent.AddPacketsToQueue(packets);
-                if (Parent != null)
-                    Parent.UpdateData(ParticipantPacket, LapPacket, CarStatusPacket, SessionPacket);
             }
         }
     }

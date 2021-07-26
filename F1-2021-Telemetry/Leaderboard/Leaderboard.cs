@@ -11,7 +11,7 @@ namespace F1_2021_Telemetry
     /// <summary>
     /// Leaderboard class. Contains of 20 drivers each full with its own data
     /// </summary>
-    class Leaderboard
+    public class Leaderboard
     {
         public LeaderboardDriver[] DriverData;
 
@@ -49,7 +49,7 @@ namespace F1_2021_Telemetry
     /// <summary>
     /// Represents a driver in the leaderboard. Holds all data about a driver
     /// </summary>
-    class LeaderboardDriver
+    public class LeaderboardDriver
     {
         static readonly Color[] ForeColorCoding = { Color.White, Color.Yellow, Color.LimeGreen, Color.Purple };
         static readonly Color[] BackColorCodingEven = { Color.Black, Color.Yellow, Color.LimeGreen, Color.Purple };

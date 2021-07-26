@@ -24,17 +24,27 @@ namespace F1_2021_Telemetry
     public partial class FormMain : Form
     {
         // Constants
-        static readonly Color GlobalColorGray = Color.FromArgb(50, 50, 50);
-        static readonly int NumberOfDrivers = 20;
+        public static readonly Color GlobalColorGray = Color.FromArgb(50, 50, 50);
+        public static readonly int NumberOfDrivers = 20;
 
         private UdpListener UdpListener; // Receiving data from the game
 
+        private SessionPacket.SessionType CurrentSessionType;
+        public SessionPacket SessionPacket;
+        public LapPacket LapPacket;
+        public ParticipantPacket ParticipantPacket;
+        public CarStatusPacket CarStatusPacket;
+
         private LeaderboardManager LeaderboardManager; // leadboard table
+        public Leaderboard LatestLeaderboard = null;
+
+        private LapTimeGraph LapTimeGraph;
+
+        private System.Timers.Timer UpdateTableTimer;
+        private int UpdateFrequency = 30;
+        private System.Timers.Timer UpdateDriverCircleTimer;
 
         private DriverCircle DriverCircle; // driver circle
-        private Bitmap CircleBitmap; // Bitmap for driver circle
-
-        private SessionPacket SessionPacket;
 
         private System.Timers.Timer UnmarkPositionTimer; // unmark colored position changes
         private System.Timers.Timer TimeLeftBlinkTimer; // blink if there is little time left in the session
@@ -50,14 +60,21 @@ namespace F1_2021_Telemetry
         public bool PerformanceMode = false;
         public bool HighlightOwnPlayer = true;
         public bool HighLightOtherPlayers = true;
+        public bool ShowWeather = true;
 
         public FormMain()
         {
             InitializeComponent();
 
             LeaderboardManager = new LeaderboardManager();
-            DriverCircle = new DriverCircle();
+            DriverCircle = new DriverCircle(this, pb_driverCircle);
             UdpListener = new UdpListener(this); // Create UDP listener
+
+            UpdateTableTimer = new System.Timers.Timer();
+            UpdateTableTimer.Interval = (int)(1000 / this.UpdateFrequency);
+            UpdateTableTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTable);
+
+            this.LapTimeGraph = new LapTimeGraph(this, this.lapTimeChart);
 
             // Initialize leaderboard table
             for (int i = 0; i < NumberOfDrivers; i++)
@@ -88,8 +105,6 @@ namespace F1_2021_Telemetry
             SafetyCarBlinkTimer = new System.Timers.Timer();
             SafetyCarBlinkTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnSafetyCarBlink);
             SafetyCarBlinkTimer.Interval = 500;
-
-            CircleBitmap = new Bitmap(pb_driverCircle.Width, pb_driverCircle.Height); // Create bitmap for driver circle
 
             // Insert marshalzone labels in array for easy access later
             MarshalZoneLabels = new Label[21];
@@ -131,6 +146,25 @@ namespace F1_2021_Telemetry
 
 
             toolTip_performanceMode.SetToolTip(this.button_pitstopDeltaAuto, "Sets delta to recommended for current track.\nNot updated to F1-2021 !");
+
+
+            // STARTING
+            UdpListener.Start();
+            UpdateTableTimer.Start();
+        }
+
+        public void SetUpdateFrequency(int freq)
+        {
+            this.UpdateFrequency = freq;
+            this.UpdateTableTimer.Stop();
+            this.UpdateTableTimer.Interval = (int)(1000 / this.UpdateFrequency);
+            if(this.UdpListener.Running)
+                this.UpdateTableTimer.Start();
+        }
+
+        public int GetUpdateFrequency()
+        {
+            return this.UpdateFrequency;
         }
 
         public DataGridView getLeaderboardGridView()
@@ -138,20 +172,27 @@ namespace F1_2021_Telemetry
             return this.dataGridView_leaderboard;
         }
 
-        /// <summary>
-        /// Update everything with the given data packets
-        /// </summary>
-        /// <param name="participantPacket">ParticipantPacket</param>
-        /// <param name="lapPacket">LapPacket</param>
-        /// <param name="carStatusPacket">CarStatusPacket</param>
-        /// <param name="sessionPacket">SessionPacket</param>
-        /// <param name="sessionHistoryPacket">SessionPacket</param>
-        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket)
+        public void UpdateData()
         {
-            this.UpdateSession(sessionPacket); // Update session related information                
+            if (this.LapPacket == null || this.ParticipantPacket == null || this.SessionPacket == null || this.CarStatusPacket == null) return;
 
-            LeaderboardManager.UpdateData(participantPacket, lapPacket, carStatusPacket, sessionPacket); // Update the LeaderboardManager
+            if (this.CurrentSessionType != this.SessionPacket.SessionTypeMode)
+            {
+                this.CurrentSessionType = this.SessionPacket.SessionTypeMode;
+                this.LeaderboardManager.InitSessionInfo(NumberOfDrivers, this.SessionPacket.TotalLapsInRace, this.SessionPacket.TrackLengthMeters);
+            }
+
+            LeaderboardManager.UpdateData(this.ParticipantPacket, this.LapPacket, this.CarStatusPacket, this.SessionPacket); // Update the LeaderboardManager                        
+        }
+
+        private void UpdateTable(object sender, EventArgs e)
+        {
+            if (this.LeaderboardManager.IsReady == false) return;
+
+            this.UpdateSessionInfo();
+            
             Leaderboard leaderboard = LeaderboardManager.getLeaderboard(); // Get Current Leaderboard
+            this.LatestLeaderboard = leaderboard;
 
             if (leaderboard.TheoredicalBestLap != 0)
             {
@@ -161,15 +202,11 @@ namespace F1_2021_Telemetry
                 });
             }
 
-            this.UpdateCircle(leaderboard, lapPacket, sessionPacket); // Update driver circle
-
-
-            int playerPosition = 0; // Position of player
-            LeaderboardDriver player = null; // Data of Player
-
             for (byte i = 0; i < NumberOfDrivers; i++) // iterate through positions
             {
                 LeaderboardDriver driver = leaderboard.getDriver(i); // Driver in position i
+                bool driverIsPlayerOrSpactator = this.SessionPacket.IsSpectating == false && driver.Index == this.SessionPacket.PlayerCarIndex ||
+                            this.SessionPacket.IsSpectating == true && driver.Index == this.SessionPacket.CarIndexBeingSpectated;
 
                 dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
                 {
@@ -181,28 +218,20 @@ namespace F1_2021_Telemetry
                     }
                     else
                     {
-                        if (sessionPacket.IsSpectating == false && driver.Index == sessionPacket.PlayerCarIndex ||
-                            sessionPacket.IsSpectating == true && driver.Index == sessionPacket.CarIndexBeingSpectated) // Safe position and driver information of player/spectated player
+                        dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
+                        if (driverIsPlayerOrSpactator) // Safe position and driver information of player/spectated player
                         {
-                            playerPosition = i;
-                            player = driver;
+                            this.UpdateGapLabels(leaderboard, driver, i); // Update labels for gaps
+                            this.LapTimeGraph.UpdateData(this.LeaderboardManager.GetSessionHistories(), driver);
                         }
 
-                        dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
 
-                        bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && (driver.Index == participantPacket.PlayerCarIndex || (sessionPacket.IsSpectating && driver.Index == sessionPacket.CarIndexBeingSpectated)));
-                        if (!PerformanceMode) this.ColorDriverRow(driver, participantPacket, i, highlight); // Color the information of the driver
-                        if (driver.Index == lapPacket.PlayerCarIndex) this.PlotLapTimeGraph(this.LeaderboardManager.GetSessionHistories(), leaderboard, driver);
+                        bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && driverIsPlayerOrSpactator);
+                        if (!PerformanceMode) this.ColorDriverRow(driver, this.ParticipantPacket, i, highlight); // Color the information of the driver
                     }
                 }); // end table editing
             }
-
-            if (player != null)
-            {
-                this.UpdateGapLabels(leaderboard, player, playerPosition); // Update labels for gaps
-            }
         }
-
         public void UpdateHistoryPacket(SessionHistoryPacket sessionHistoryPacket)
         {
             this.LeaderboardManager.UpdateHistoryPacket(sessionHistoryPacket);
@@ -223,7 +252,7 @@ namespace F1_2021_Telemetry
 
             driversRow.Cells[0].Style.BackColor = driver.TeamColor; // Color the team color cell
 
-            if (participantPacket.FieldParticipantData[driver.Index].IsAiControlled == false && highlightPlayer) // Driver is human player
+            if (participantPacket.FieldParticipantData[driver.Index].IsAiControlled == false && highlightPlayer) // Driver is human player and should be highlighted
             {
                 Color driverBackColor = Color.FromArgb((int)(driver.TeamColor.R * 0.5f), (int)(driver.TeamColor.G * 0.5f), (int)(driver.TeamColor.B * 0.5f)); // 50% of team color
 
@@ -320,163 +349,6 @@ namespace F1_2021_Telemetry
             }*/
         }
 
-        /// <summary>
-        /// Updates the driver circle
-        /// </summary>
-        /// <param name="leaderboard"></param>
-        /// <param name="lapPacket"></param>
-        /// <param name="sessionPacket"></param>
-        private void UpdateCircle(Leaderboard leaderboard, LapPacket lapPacket, SessionPacket sessionPacket)
-        {
-            pb_driverCircle.Invoke((MethodInvoker)delegate () // Draw circle with all drivers
-            {
-                DriverCircle.ClearCircle(pb_driverCircle, CircleBitmap, GlobalColorGray); // Clear the driver circle
-                for (byte i = 0; i < NumberOfDrivers; i++)
-                {
-                    LeaderboardDriver driver = leaderboard.getDriver(NumberOfDrivers - 1 - i); // Driver in position i
-                    if (driver != null)
-                    {
-                        DriverCircle.DrawDrivers(driver, lapPacket, sessionPacket, pb_driverCircle, CircleBitmap); // Tell circle to draw driver
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// Plot the last 10 lap times of the driver (and the driver in front/back)
-        /// </summary>
-        /// <param name="sessionHistoryPackets"></param>
-        /// <param name="leaderboard"></param>
-        /// <param name="driver"></param>
-        private void PlotLapTimeGraph(SessionHistoryPacket[] sessionHistoryPackets, Leaderboard leaderboard, LeaderboardDriver driver)
-        {
-            if (sessionHistoryPackets[driver.Index] == null)
-            {
-                return; // If no history data for self
-            }
-
-            List<double> lapTimesSelf = new List<double>();
-            List<double> lapTimesFront = new List<double>();
-            List<double> lapTimesBehind = new List<double>();
-
-
-            LeaderboardDriver driverFront = null;
-            if (driver.CarPosition > 1)
-                driverFront = leaderboard.DriverData[driver.CarPosition - 2];
-
-            LeaderboardDriver driverBehind = null;
-            if (driver.CarPosition < 20)
-                driverBehind = leaderboard.DriverData[driver.CarPosition];
-
-            bool driverFrontValid = driverFront != null && sessionHistoryPackets[driverFront.Index] != null; // whether a driver in front exists (and its data)
-            bool driverBehindValid = driverBehind != null && sessionHistoryPackets[driverBehind.Index] != null; // whether a driver behind exists (and its data)
-
-            int lapStartIndex = driver.CurrentLapNumber > 10 ? driver.CurrentLapNumber - 10 - 1 : 0; // Current lap number - 10
-
-            for(int i = 0; i < lapStartIndex; i++) // Offset of lines in graph so the laps are visibile and in the right spot
-            {
-                lapTimesSelf.Add(0);
-                lapTimesFront.Add(0); 
-                lapTimesBehind.Add(0);
-            }
-
-            double min = 1000; // min lap time
-            double max = 0; // max lap time
-
-            for (int i = lapStartIndex; i < lapStartIndex + 10; i++) // for each lap
-            {
-                // Self
-                double lapTime = sessionHistoryPackets[driver.Index].LapsHistoryData[i].LapTimeInMs / 1000.0; // Lap time in seconds
-                if(lapTime != 0)
-                    lapTimesSelf.Add(lapTime); // Add time to list
-
-                if (lapTime > max)
-                {
-                    max = lapTime;
-                }
-                if (lapTime < min && lapTime > 0)
-                {
-                    min = lapTime;
-                }
-
-
-                // Driver in front
-                if (driverFrontValid)
-                {
-                    lapTime = sessionHistoryPackets[driverFront.Index].LapsHistoryData[i].LapTimeInMs / 1000.0;
-                    if (lapTime != 0)
-                        lapTimesFront.Add(lapTime);
-                    if (lapTime > max)
-                    {
-                        max = lapTime;
-                    }
-                    if (lapTime < min && lapTime > 0)
-                    {
-                        min = lapTime;
-                    }
-                }
-
-                // Driver behind
-                if (driverBehindValid)
-                {
-                    lapTime = sessionHistoryPackets[driverBehind.Index].LapsHistoryData[i].LapTimeInMs / 1000.0;
-                    if (lapTime != 0)
-                        lapTimesBehind.Add(lapTime);
-                    if (lapTime > max)
-                    {
-                        max = lapTime;
-                    }
-                    if (lapTime < min && lapTime > 0)
-                    {
-                        min = lapTime;
-                    }
-                }
-            }
-
-            // Create series for self
-            Series selfSeries = new Series("Self");
-            selfSeries.Points.DataBindY(lapTimesSelf.ToArray()); // Convert list to data points
-            selfSeries.ChartType = SeriesChartType.FastLine;
-            selfSeries.Color = driver.TeamColor;
-            selfSeries.BorderWidth = 6; // Own line thicker than the others
-
-            Series driverFrontSeries = new Series("Front");
-            if (driverFrontValid)
-            {
-                driverFrontSeries.Points.DataBindY(lapTimesFront.ToArray());
-                driverFrontSeries.ChartType = SeriesChartType.FastLine;
-                driverFrontSeries.Color = driverFront.TeamColor;
-                driverFrontSeries.BorderWidth = 3;
-            }
-
-            Series driverBehindSeries = new Series("Behind");
-            if (driverBehindValid)
-            {
-                driverBehindSeries.Points.DataBindY(lapTimesBehind.ToArray());
-                driverBehindSeries.ChartType = SeriesChartType.FastLine;
-                driverBehindSeries.Color = driverBehind.TeamColor;
-                driverBehindSeries.BorderWidth = 3;
-            }
-
-            // Add each series to the chart
-            chart1.Series.Clear();
-            chart1.Series.Add(selfSeries);
-            chart1.Series.Add(driverFrontSeries);
-            chart1.Series.Add(driverBehindSeries);
-
-            min = Math.Floor(min);
-            max = Math.Ceiling(max);
-
-            // Additional styling
-            chart1.ResetAutoValues();
-            chart1.Titles.Clear();
-            chart1.ChartAreas[0].AxisY.Interval = Math.Round((max - min) / 5.0,0);
-            chart1.ChartAreas[0].AxisX.Interval = 1;
-            chart1.ChartAreas[0].AxisY.Minimum = min - 1;
-            chart1.ChartAreas[0].AxisY.Maximum = max + 1;
-            chart1.ChartAreas[0].AxisX.Minimum = lapStartIndex + 1;
-            chart1.ChartAreas[0].AxisX.Maximum = lapStartIndex + 10;
-        }
 
         /// <summary>
         /// Updates the labels for gaps of driver ahead, behind and the leader.
@@ -530,23 +402,14 @@ namespace F1_2021_Telemetry
         /// Handle new session packet. Changes components such as marshalzones, session timer and track label
         /// </summary>
         /// <param name="sessionPacket"></param>
-        private void UpdateSession(SessionPacket sessionPacket)
-        {
-            if (this.SessionPacket == null ||
-                sessionPacket.SessionTime < this.SessionPacket.SessionTime && sessionPacket.SessionTypeMode != this.SessionPacket.SessionTypeMode) // New session 
-            {
-                Console.WriteLine("New Session");
-                this.LeaderboardManager.InitSessionInfo(NumberOfDrivers, sessionPacket.TotalLapsInRace, sessionPacket.TrackLengthMeters); // Init leaderboard manager
-            }
-
-            this.SessionPacket = sessionPacket;
-
+        private void UpdateSessionInfo()
+        {           
             label_sessionTimeLeft.Invoke((MethodInvoker)delegate ()
             {
-                label_sessionTimeLeft.Text = Utility.formatTimeToMinutes(sessionPacket.SessionTimeLeft, false, true); // Set session time left text
+                label_sessionTimeLeft.Text = Utility.formatTimeToMinutes(this.SessionPacket.SessionTimeLeft, false, true); // Set session time left text
             });
 
-            if (sessionPacket.SessionTimeLeft < 300) // If less than 5 minutes
+            if (this.SessionPacket.SessionTimeLeft < 300) // If less than 5 minutes
             {
                 label_sessionTimeLeft.ForeColor = Color.Red; // Text color red
                 TimeLeftBlinkTimer.Start(); // Start blinking
@@ -560,13 +423,13 @@ namespace F1_2021_Telemetry
 
             for (int i = 0; i < 21; i++) // For every marshalzone set color
             {
-                if (i + 1 > sessionPacket.NumberOfMarshallZones)
+                if (i + 1 > this.SessionPacket.NumberOfMarshallZones)
                 {
                     MarshalZoneLabels[i].BackColor = Color.Transparent;
                 }
                 else
                 {
-                    SessionPacket.MarshallZone mz = sessionPacket.MarshallZones[i];
+                    SessionPacket.MarshallZone mz = this.SessionPacket.MarshallZones[i];
                     switch (mz.ZoneFlag)
                     {
                         case FiaFlag.None:
@@ -588,57 +451,15 @@ namespace F1_2021_Telemetry
                     }
                 }
             }
-
-            label_session.Invoke((MethodInvoker)delegate ()
-            {
-                label_session.Text = sessionPacket.SessionTypeMode.ToString();
-            });
-
-            label_track.Invoke((MethodInvoker)delegate ()
-            {
-                label_track.Text = sessionPacket.SessionTrack.ToString(); // Set track name
-            });
-
-            label_airTemp.Invoke((MethodInvoker)delegate ()
-            {
-                label_airTemp.Text = sessionPacket.AirTemperatureCelsius + " °C"; // Set air temperature
-            });
-
-            label_trackTemp.Invoke((MethodInvoker)delegate ()
-            {
-                label_trackTemp.Text = sessionPacket.TrackTemperatureCelsius + " °C"; // Set track temperature
-            });
-
-            label_pitstopIdealLap.Invoke((MethodInvoker)delegate ()
-            {
-                byte idealLap = sessionPacket.PitStopWindowIdealLap;
-                if (idealLap > 0)
-                    label_pitstopIdealLap.Text = idealLap.ToString(); // Pit stop ideal lap (current strategy)
-                else label_pitstopIdealLap.Text = "-";
-            });
-
-            label_pitstopLatestLap.Invoke((MethodInvoker)delegate ()
-            {
-                byte latestLap = sessionPacket.PitStopWindowLatestLap;
-                if (latestLap > 0)
-                    label_pitstopLatestLap.Text = latestLap.ToString(); // Pit stop latest lap (current strategy)
-                else label_pitstopLatestLap.Text = "-";
-            });
-
-            label_pitstopPositionAfter.Invoke((MethodInvoker)delegate ()
-            {
-                label_pitstopPositionAfter.Text = sessionPacket.PitStopRejoinPosition.ToString(); // Estimated position after pit stop
-            });
-
-            if (sessionPacket.CurrentSafetyCarStatus != SessionPacket.SafetyCarStatus.None)
+            if (this.SessionPacket.CurrentSafetyCarStatus != SessionPacket.SafetyCarStatus.None) // If there is (virtual) safety car
             {
                 label_safetyCar.Invoke((MethodInvoker)delegate ()
                 {
-                    label_safetyCar.Text = sessionPacket.CurrentSafetyCarStatus.ToString();
+                    label_safetyCar.Text = this.SessionPacket.CurrentSafetyCarStatus.ToString(); // Safety car status
                 });
                 SafetyCarBlinkTimer.Start();
             }
-            else
+            else // If there is no safety car
             {
                 SafetyCarBlinkTimer.Stop();
                 label_safetyCar.Invoke((MethodInvoker)delegate ()
@@ -648,16 +469,58 @@ namespace F1_2021_Telemetry
                 });
             }
 
-            for (int i = 0; i < 5; i++)
+            label_session.Invoke((MethodInvoker)delegate ()
+            {
+                label_session.Text = this.SessionPacket.SessionTypeMode.ToString(); // Set session type text
+            });
+
+            label_track.Invoke((MethodInvoker)delegate ()
+            {
+                label_track.Text = this.SessionPacket.SessionTrack.ToString(); // Set track name
+            });
+
+            label_airTemp.Invoke((MethodInvoker)delegate ()
+            {
+                label_airTemp.Text = this.SessionPacket.AirTemperatureCelsius + " °C"; // Set air temperature
+            });
+
+            label_trackTemp.Invoke((MethodInvoker)delegate ()
+            {
+                label_trackTemp.Text = this.SessionPacket.TrackTemperatureCelsius + " °C"; // Set track temperature
+            });
+
+            label_pitstopIdealLap.Invoke((MethodInvoker)delegate ()
+            {
+                byte idealLap = this.SessionPacket.PitStopWindowIdealLap;
+                if (idealLap > 0)
+                    label_pitstopIdealLap.Text = idealLap.ToString(); // Pit stop ideal lap (current strategy)
+                else label_pitstopIdealLap.Text = "-";
+            });
+
+            label_pitstopLatestLap.Invoke((MethodInvoker)delegate ()
+            {
+                byte latestLap = this.SessionPacket.PitStopWindowLatestLap;
+                if (latestLap > 0)
+                    label_pitstopLatestLap.Text = latestLap.ToString(); // Pit stop latest lap (current strategy)
+                else label_pitstopLatestLap.Text = "-";
+            });
+
+            label_pitstopPositionAfter.Invoke((MethodInvoker)delegate ()
+            {
+                label_pitstopPositionAfter.Text = this.SessionPacket.PitStopRejoinPosition.ToString(); // Estimated position after pit stop
+            });
+
+
+            for (int i = 0; i < 5; i++) // For every forecast label
             {
                 Label rainPercentageLabel = RainPercentageLabels[i];
                 Label weatherForecastLabel = WeatherForecastLabels[i];
                 string rainPercentage;
                 string weatherForecast;
-                if (sessionPacket.SessionTypeMode == sessionPacket.WeatherForecastSamples[i].SessionTypeMode)
+                if (this.SessionPacket.SessionTypeMode == this.SessionPacket.WeatherForecastSamples[i].SessionTypeMode)
                 {
-                    rainPercentage = sessionPacket.WeatherForecastSamples[i].RainPercentage + "%";
-                    weatherForecast = sessionPacket.WeatherForecastSamples[i].ForecastedWeatherCondition.ToString();
+                    rainPercentage = this.SessionPacket.WeatherForecastSamples[i].RainPercentage + "%";
+                    weatherForecast = this.SessionPacket.WeatherForecastSamples[i].ForecastedWeatherCondition.ToString();
                 }
                 else
                 {
@@ -709,6 +572,43 @@ namespace F1_2021_Telemetry
             return LeaderboardManager.LiveTiming;
         }
 
+        public void SetWeatherVisibility(bool visible)
+        {
+            this.ShowWeather = visible;
+            if (this.ShowWeather == false && this.gb_weatherForecast.Visible)
+            {
+                this.gb_weatherForecast.Visible = false;
+                this.gb_lapTimes.Location = new Point(this.gb_weatherForecast.Location.X, this.gb_lapTimes.Location.Y);
+                //this.gb_lapTimes.Width = gb_lapTimes.Width + gb_weatherForecast.Width + 5;
+            }
+            else if (this.ShowWeather && this.gb_weatherForecast.Visible == false)
+            {
+                this.gb_weatherForecast.Visible = true;
+                this.gb_lapTimes.Location = new Point(this.gb_weatherForecast.Location.X + gb_weatherForecast.Width + 5, this.gb_lapTimes.Location.Y);
+                //this.gb_lapTimes.Width = 265;
+            }
+            this.ResizeUi();
+        }
+
+        private void ResizeUi()
+        {
+            if (pb_driverCircle.Height > 10) // Prevent glitch when minimizing
+            {
+                pb_driverCircle.Width = pb_driverCircle.Height; // Make driver circle base form a square again
+                pb_driverCircle.Location = new Point(dataGridView_leaderboard.Location.X + dataGridView_leaderboard.Width - pb_driverCircle.Width, pb_driverCircle.Location.Y); // Relocate driver circle
+                if (pb_driverCircle.Height > 0)
+                    this.DriverCircle.Resize();
+
+                label_text_pitstopDelta.Location = new Point(pb_driverCircle.Location.X - 208, label_text_pitstopDelta.Location.Y); // Move label next to driver circle
+                numeric_pitstopDelta.Location = new Point(pb_driverCircle.Location.X - 90, numeric_pitstopDelta.Location.Y); // Move pitstopDeltaInput next to driver circle
+                button_pitstopDeltaAuto.Location = new Point(pb_driverCircle.Location.X - 90, button_pitstopDeltaAuto.Location.Y); // Move pitstopDeltaAutoCheckbox next to driver circle
+            }
+            if (gb_lapTimes.Width > 10)
+            {
+                gb_lapTimes.Width = pb_driverCircle.Location.X - gb_lapTimes.Location.X - 5;
+                gb_lapTimes.Height = this.Height - gb_lapTimes.Location.Y - 51;
+            }
+        }
 
         /*
          * UI Events following
@@ -726,52 +626,11 @@ namespace F1_2021_Telemetry
         }
         private void MainForm_SizeChanged(object sender, EventArgs e)
         {
-            if (pb_driverCircle.Height > 10) // Prevent glitch when minimizing
-            {
-                pb_driverCircle.Width = pb_driverCircle.Height; // Make driver circle base form a square again
-                pb_driverCircle.Location = new Point(dataGridView_leaderboard.Location.X + dataGridView_leaderboard.Width - pb_driverCircle.Width, pb_driverCircle.Location.Y); // Relocate driver circle
-                if (pb_driverCircle.Height > 0)
-                    CircleBitmap = new Bitmap(pb_driverCircle.Width, pb_driverCircle.Height); // Adjust bitmap size within picturebox
-
-                label_text_pitstopDelta.Location = new Point(pb_driverCircle.Location.X - 208, label_text_pitstopDelta.Location.Y); // Move label next to driver circle
-                numeric_pitstopDelta.Location = new Point(pb_driverCircle.Location.X - 90, numeric_pitstopDelta.Location.Y); // Move pitstopDeltaInput next to driver circle
-                button_pitstopDeltaAuto.Location = new Point(pb_driverCircle.Location.X - 90, button_pitstopDeltaAuto.Location.Y); // Move pitstopDeltaAutoCheckbox next to driver circle
-            }
-            if(gp_lapTimes.Width > 10)
-            {
-                gp_lapTimes.Width = pb_driverCircle.Location.X - gp_lapTimes.Location.X - 5;
-                gp_lapTimes.Height = this.Height - gp_lapTimes.Location.Y - 51;
-            }
+            ResizeUi();
         }
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             UdpListener.Stop(); // Stop UDP listener (other Thread, importent to close)
-        }
-
-        /// <summary>
-        /// Button start/stop has been pressed: start/stop the UDP listener
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_start_Click(object sender, EventArgs e)
-        {
-            if (UdpListener.Running)
-            {
-                UdpListener.Stop();
-                button_start.Text = "Start";
-                button_start.BackColor = Color.LimeGreen;
-            }
-            else
-            {
-                UdpListener.Start();
-                button_start.Text = "Stop";
-                button_start.BackColor = Color.LightGray;
-            }
-        }
-
-        private void button_reset_Click(object sender, EventArgs e)
-        {
-            LeaderboardManager.Clear(); // Reset leaderboard
         }
         private void button_clearTableSelection_Click(object sender, EventArgs e)
         {

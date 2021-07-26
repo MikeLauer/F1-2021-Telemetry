@@ -85,6 +85,7 @@
     <Compile Include="FormSettings.Designer.cs">
       <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="LapTimeGraph.cs" />
     <Compile Include="Leaderboard\DriverCircle.cs" />
     <Compile Include="Leaderboard\Leaderboard.cs" />
     <Compile Include="Leaderboard\LeaderboardManager.cs" />

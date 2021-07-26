@@ -28,6 +28,8 @@ namespace F1_2021_Telemetry
 
         private int NumberOfDrivers;
 
+        public bool IsReady = false;
+
 
         public void InitSessionInfo(int numberOfDrivers, int numberOfLaps, float trackLength)
         {
@@ -56,6 +58,7 @@ namespace F1_2021_Telemetry
                 }                
             }
             LastLapPacket = null;
+            this.IsReady = false;
         }
 
         /// <summary>
@@ -67,19 +70,22 @@ namespace F1_2021_Telemetry
         /// <param name="sessionPacket"></param>
         public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket)
         {
-            this.LastLapPacket = this.LapPacket;
             this.LapPacket = lapPacket;
             this.ParticipantPacket = participantPacket;
             this.SessionPacket = sessionPacket;
-            this.CarStatusPacket = carStatusPacket;           
+            this.CarStatusPacket = carStatusPacket;
 
-            for (int i = 0; i < NumberOfDrivers; i++) // for each driver
+            if (sessionPacket.SessionTypeMode == SessionPacket.SessionType.Race) // If session type is 'Race' compute distances
             {
-                if (lapPacket.FieldLapData[i].LapDistance < 0) continue;
+                for (int i = 0; i < NumberOfDrivers; i++) // for each driver
+                {
+                    if (lapPacket.FieldLapData[i].LapDistance < 0) continue;
 
-                if (sessionPacket.SessionTypeMode == SessionPacket.SessionType.Race) // If session type is 'Race' compute distances
                     this.SetTimestampForGapCalculation(sessionPacket, lapPacket, i); // Gaps
+                }
             }
+
+            this.IsReady = true;
         }
 
         public void UpdateHistoryPacket(SessionHistoryPacket sessionHistoryPacket)
@@ -230,6 +236,8 @@ namespace F1_2021_Telemetry
             }
 
             leaderboard = this.ComputeOrderDependentValues(leaderboard);
+
+            this.LastLapPacket = this.LapPacket;
             return leaderboard;
         }
 

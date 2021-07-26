@@ -16,13 +16,47 @@ namespace F1_2021_Telemetry
     {
         public static readonly float[] TrackPitstopDelta = { 22.5f, 25.0f /*No data*/, 23.0f, 24.6f, 22.5f, 25.0f, 23.6f, 24.7f, 25.0f /*No data*/, 22.0f, 23.0f, 25.0f, 29.2f, 23.5f, 22.0f, 25.0f /*No data*/, 24.5f, 22.5f, 30.5f, 22.8f, 25.0f /*No data*/, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f };
 
+        private FormMain Parent;
+        private PictureBox pictureBox;
+        private Bitmap CircleBitmap;
+
+        private System.Timers.Timer UpdateTimer;
+
         private float[] DriverLapTimeMeter; // Meter in lap at certain point of time. 10th second accuracy
 
         private float CustomPitstopDelta = 20;
 
-        public DriverCircle()
+        public DriverCircle(FormMain formMain, PictureBox pictureBox)
         {
+            this.Parent = formMain;
+            this.pictureBox = pictureBox;
+            this.CircleBitmap = new Bitmap(this.pictureBox.Width, this.pictureBox.Height); // Create bitmap for driver circle
+
             DriverLapTimeMeter = new float[2400]; // 2min * 60 (seconds) * 10 (th second)
+
+            this.UpdateTimer = new System.Timers.Timer();
+            this.UpdateTimer.Interval = 50;
+            this.UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateDriverCircle); ;
+            this.UpdateTimer.Start();
+        }
+
+        private void UpdateDriverCircle(object sender, EventArgs e)
+        {
+            if (this.Parent.LatestLeaderboard == null)
+                return;
+
+            pictureBox.Invoke((MethodInvoker)delegate () // Draw circle with all drivers
+            {
+                this.ClearCircle(pictureBox, CircleBitmap, FormMain.GlobalColorGray); // Clear the driver circle
+                for (byte i = 0; i < FormMain.NumberOfDrivers; i++)
+                {
+                    LeaderboardDriver driver = this.Parent.LatestLeaderboard.getDriver(FormMain.NumberOfDrivers - 1 - i); // Driver in position i
+                    if (driver != null)
+                    {
+                        this.DrawDrivers(driver.Index, driver.TeamColor, this.Parent.LapPacket, this.Parent.SessionPacket, pictureBox, CircleBitmap); // Tell circle to draw driver
+                    }
+                }
+            });
         }
 
         public void SetCustomPitstopDelta(float delta)
@@ -56,7 +90,7 @@ namespace F1_2021_Telemetry
         /// <param name="currentLapTime"></param>
         /// <param name="track"></param>
         /// <returns></returns>
-        private float GetMetersOfPitstopLine(LeaderboardDriver driver, uint currentLapTime, Track track)
+        private float GetMetersOfPitstopLine(uint lastLapTime, uint currentLapTime, Track track)
         {
             uint pitstopDelta = (uint)(TrackPitstopDelta[(int)track]);
             if (CustomPitstopDelta != -1)
@@ -70,7 +104,7 @@ namespace F1_2021_Telemetry
             int pitstopLineTime;
             if (delta < 0) // If delta is negativ (e.g. when just crossed the start/finish line)
             {
-                delta = (int)(delta + (driver.LastLapTime/100)); // Add time of last lap
+                delta = (int)(delta + (lastLapTime/100)); // Add time of last lap
             }
             pitstopLineTime = delta;
             
@@ -95,14 +129,16 @@ namespace F1_2021_Telemetry
         /// <param name="trackLength"></param>
         /// <param name="isPlayer"></param>
         /// <param name="isSpectating"></param>
-        public void DrawDrivers(LeaderboardDriver driver, LapPacket lapPacket, SessionPacket sessionPacket, PictureBox pictureBox, Bitmap CircleBitmap)
+        public void DrawDrivers(int index, Color teamColor, LapPacket lapPacket, SessionPacket sessionPacket, PictureBox pictureBox, Bitmap CircleBitmap)
         {
-            if (sessionPacket.TrackLengthMeters == 0 || driver == null) return; //|| lapPacket.FieldLapData[driver.Index].CurrentPitStatus != PitStatus.OnTrack
-            if (driver.LapDistance < 0) // On OutLap e.g. the lap distance is trackLength-drivenDistance
+            LapPacket.LapData lapData = lapPacket.FieldLapData[index];
+            if (sessionPacket.TrackLengthMeters == 0) return;
+
+            if (lapData.LapDistance < 0) // On OutLap e.g. the lap distance is trackLength-drivenDistance
             {
-                driver.LapDistance = sessionPacket.TrackLengthMeters + driver.LapDistance;
+                lapData.LapDistance = sessionPacket.TrackLengthMeters + lapData.LapDistance;
             }
-            float position = driver.LapDistance;
+            float position = lapData.LapDistance;
             int distanceToBorder = 30; // Distance to border
             int radius = (pictureBox.Width / 2) - distanceToBorder; // Radius of circle
             double angle = getAngleFromPosition(position, sessionPacket.TrackLengthMeters); // Angle of driver position
@@ -113,24 +149,24 @@ namespace F1_2021_Telemetry
             int l = (int)Math.Round((pictureBox.Width / 2) + circle_x, 0); // Map coordinates
             int t = (int)Math.Round((pictureBox.Height / 2) + circle_y, 0); // Map coordinates           
 
-            int colorSum = driver.TeamColor.R + driver.TeamColor.G + driver.TeamColor.B;
+            int colorSum = teamColor.R + teamColor.G + teamColor.B;
             int colorValue = (colorSum < 300) ? 255 : 0;
             Color color = Color.FromArgb(colorValue, colorValue, colorValue); // Text color inverse of team color
             
             using (Graphics g = Graphics.FromImage(CircleBitmap))
             {
-                g.FillEllipse(new SolidBrush(driver.TeamColor), Rectangle.FromLTRB(l - size, t - size, l + size, t + size));
+                g.FillEllipse(new SolidBrush(teamColor), Rectangle.FromLTRB(l - size, t - size, l + size, t + size));
 
-                g.DrawString(driver.CarPosition.ToString(), new Font("Arial", 9), new SolidBrush(color), Rectangle.FromLTRB(l - size + 4, t - size + 4, l + size, t + size)); // Draw driver position
+                g.DrawString(lapData.CarPosition.ToString(), new Font("Arial", 9), new SolidBrush(color), Rectangle.FromLTRB(l - size + 4, t - size + 4, l + size, t + size)); // Draw driver position
             }
 
-            if (sessionPacket.IsSpectating == false && sessionPacket.PlayerCarIndex == driver.Index || 
-                sessionPacket.IsSpectating == true && sessionPacket.CarIndexBeingSpectated == driver.Index) // If driver is player or spectated player
+            if (sessionPacket.IsSpectating == false && sessionPacket.PlayerCarIndex == index || 
+                sessionPacket.IsSpectating == true && sessionPacket.CarIndexBeingSpectated == index) // If driver is player or spectated player
             {
-                uint currentLapTime = lapPacket.FieldLapData[driver.Index].CurrentLapTimeInMs;
-                SetDriverTimeOnPosition(currentLapTime, driver.LapDistance); // Save distance based on time
+                uint currentLapTime = lapPacket.FieldLapData[index].CurrentLapTimeInMs;
+                SetDriverTimeOnPosition(currentLapTime, lapData.LapDistance); // Save distance based on time
 
-                position = GetMetersOfPitstopLine(driver, currentLapTime, sessionPacket.SessionTrack); // Get track position of pitstop line
+                position = GetMetersOfPitstopLine(lapData.LastLapTimeInMs, currentLapTime, sessionPacket.SessionTrack); // Get track position of pitstop line
 
                 angle = getAngleFromPosition(position, sessionPacket.TrackLengthMeters); // Calculate angle (radian)
                 int thickness = 40;
@@ -146,7 +182,7 @@ namespace F1_2021_Telemetry
 
                     Point p2 = new Point((int)pitline_x2, (int)pitline_y2);
 
-                    g.DrawLine(new Pen(driver.TeamColor, 4.0f), p1, p2); // Draw pitstop line in team color
+                    g.DrawLine(new Pen(teamColor, 4.0f), p1, p2); // Draw pitstop line in team color
                 }
             }
 
@@ -181,6 +217,11 @@ namespace F1_2021_Telemetry
 
             pictureBox.Image = CircleBitmap;
 
+        }
+
+        public void Resize()
+        {
+            this.CircleBitmap = new Bitmap(pictureBox.Width, pictureBox.Height); // Adjust bitmap size within picturebox;
         }
 
     }

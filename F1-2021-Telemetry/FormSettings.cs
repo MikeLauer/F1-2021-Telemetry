@@ -22,7 +22,11 @@ namespace F1_2021_Telemetry
 
         private void FormSettings_Load(object sender, EventArgs e)
         {
+            this.Location = this.MainForm.Location;
+
             cb_liveTimings.Checked = this.MainForm.getLiveTimingEnabled();
+
+            cb_showWeather.Checked = this.MainForm.ShowWeather;
 
             DataGridView leaderboardTable = MainForm.getLeaderboardGridView();
             cb_show_lapNumber.Checked = leaderboardTable.Columns[3].Visible;
@@ -46,10 +50,42 @@ namespace F1_2021_Telemetry
             else rb_playerHighlight_off.Checked = true;
 
             cb_performanceMode.Checked = this.MainForm.PerformanceMode;
+
+            int updateFrequency = this.MainForm.GetUpdateFrequency();
+            if(updateFrequency == 1)
+            {
+                this.rb_updateFrequency_1hz.Checked = true;
+            }
+            else if (updateFrequency == 10)
+            {
+                this.rb_updateFrequency_10hz.Checked = true;
+            }
+            else if (updateFrequency == 30)
+            {
+                this.rb_updateFrequency_30hz.Checked = true;
+            }
+            else if (updateFrequency == 60)
+            {
+                this.rb_updateFrequency_60hz.Checked = true;
+            }
         }
 
         private void button_save_Click(object sender, EventArgs e)
         {
+            int updateFrequency = 1; // Default
+            if(this.rb_updateFrequency_10hz.Checked)
+            {
+                updateFrequency = 10;
+            }
+            else if (this.rb_updateFrequency_30hz.Checked)
+            {
+                updateFrequency = 30;
+            }
+            else if (this.rb_updateFrequency_60hz.Checked)
+            {
+                updateFrequency = 60;
+            }
+            this.MainForm.SetUpdateFrequency(updateFrequency);
             this.Close();
         }
 
@@ -170,6 +206,11 @@ namespace F1_2021_Telemetry
         {
             this.MainForm.HighlightOwnPlayer = true;
             this.MainForm.HighLightOtherPlayers = true;
+        }
+
+        private void cb_showWeather_CheckedChanged(object sender, EventArgs e)
+        {
+            this.MainForm.SetWeatherVisibility(cb_showWeather.Checked);
         }
     }
 }
