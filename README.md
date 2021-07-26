@@ -36,6 +36,7 @@ Leaderboard with additional information based on the telemetry information provi
   - Latest lap for pit stop (current strategy)
   - Position after pit stop (this is from game, not computed by the program)
 - Weather forecast showing weather information for now, 5min, 10min, 15min, 30min
+- Graph showing the last 10/15 lap times of your self, driver ahead and behind
 - Driver circle
   - Shows every driver on the track. Number is the position in the leaderboard
   - Pit stop line is estimated position after pit stop (precision heavily depends on the pit stop delta that can be set)
@@ -45,6 +46,8 @@ Leaderboard with additional information based on the telemetry information provi
 - Live timing shows live sector times of each driver.
 - Human driver highlighting colours the players name and some other cells in the (bit darker) team colour.
 - Performance mode disabled colours in the table and therby reduces CPU load by a few percent (not really necessary)
+- Update frequency of the table can be set to 1/10/30/60 Hz. 30 is fine, lower will reduce CPU load, higher will show smoother number when "live timing" is enabled
+- Weather can be set to hidden to make the lap time graph lager (in case you only drive at clear weather and want a bigger graph)
 
 ### Notes
 Most data is provided by the game. Some, however, are calculated by the program itself:
@@ -52,7 +55,7 @@ Most data is provided by the game. Some, however, are calculated by the program 
 - The gaps between the cars. If a driver hasn't passed a measure point yet, no gap time will be shown.
 
 Please be also aware of:
-The UI is designed for 1080p screens. Higher resolutions are no problem and the driver circle adjusts it's size respectively. Lower resolutions will not work properly. It is currently designed for 20 players, so multiplayer sessions with 22 drivers or the my team mode will probably cause problems!
+The UI is designed for 1080p screens. Higher resolutions are no problem and the driver circle and the graph adjust their size respectively. Lower resolutions will not work properly. It is currently designed for 20 players, so multiplayer sessions with 22 drivers or the my team mode will probably cause problems!
 
 ### Enable UDP output
 To make this program work, you need to enable UDP output in the telemetry options of the game. Chosen 127.0.0.1 (default) for IP and 20777 (default) for port.
