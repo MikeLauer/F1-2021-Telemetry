@@ -34,6 +34,7 @@ namespace F1_2021_Telemetry
         public LapPacket LapPacket;
         public ParticipantPacket ParticipantPacket;
         public CarStatusPacket CarStatusPacket;
+        public CarDamagePacket CarDamagePacket;
 
         private LeaderboardManager LeaderboardManager; // leadboard table
         public Leaderboard LatestLeaderboard = null;
@@ -42,7 +43,6 @@ namespace F1_2021_Telemetry
 
         private System.Timers.Timer UpdateTableTimer;
         private int UpdateFrequency = 30;
-        private System.Timers.Timer UpdateDriverCircleTimer;
 
         private DriverCircle DriverCircle; // driver circle
 
@@ -174,7 +174,7 @@ namespace F1_2021_Telemetry
 
         public void UpdateData()
         {
-            if (this.LapPacket == null || this.ParticipantPacket == null || this.SessionPacket == null || this.CarStatusPacket == null) return;
+            if (this.LapPacket == null || this.ParticipantPacket == null || this.SessionPacket == null || this.CarStatusPacket == null || this.CarDamagePacket == null) return;
 
             if (this.CurrentSessionType != this.SessionPacket.SessionTypeMode)
             {
@@ -182,7 +182,7 @@ namespace F1_2021_Telemetry
                 this.LeaderboardManager.InitSessionInfo(NumberOfDrivers, this.SessionPacket.TotalLapsInRace, this.SessionPacket.TrackLengthMeters);
             }
 
-            LeaderboardManager.UpdateData(this.ParticipantPacket, this.LapPacket, this.CarStatusPacket, this.SessionPacket); // Update the LeaderboardManager                        
+            LeaderboardManager.UpdateData(this.ParticipantPacket, this.LapPacket, this.CarStatusPacket, this.SessionPacket, this.CarDamagePacket); // Update the LeaderboardManager                        
         }
 
         private void UpdateTable(object sender, EventArgs e)
@@ -223,6 +223,7 @@ namespace F1_2021_Telemetry
                         {
                             this.UpdateGapLabels(leaderboard, driver, i); // Update labels for gaps
                             this.LapTimeGraph.UpdateData(this.LeaderboardManager.GetSessionHistories(), driver);
+                            this.UpdateDamageLabels(driver);
                         }
 
 
@@ -386,6 +387,34 @@ namespace F1_2021_Telemetry
 
         }
 
+        private void UpdateDamageLabels(LeaderboardDriver driver)
+        {
+            this.label_frontWingDamageLeft.Invoke((MethodInvoker)delegate ()
+            {
+                this.label_frontWingDamageLeft.Text = driver.frontWingDamageLeft + "%";
+                if(driver.frontWingDamageLeft == 0)
+                {
+                    this.label_frontWingDamageLeft.ForeColor = Color.LimeGreen;
+                } else
+                {
+                    this.label_frontWingDamageLeft.ForeColor = Color.Red;
+                }
+            });
+
+            this.label_frontWingDamageRight.Invoke((MethodInvoker)delegate ()
+            {
+                this.label_frontWingDamageRight.Text = driver.frontWingDamageRight + "%";
+                if (driver.frontWingDamageRight == 0)
+                {
+                    this.label_frontWingDamageRight.ForeColor = Color.LimeGreen;
+                }
+                else
+                {
+                    this.label_frontWingDamageRight.ForeColor = Color.Red;
+                }
+            });
+        }
+
         /// <summary>
         /// Unmark the position change coloring and stop the timer
         /// </summary>
@@ -464,8 +493,9 @@ namespace F1_2021_Telemetry
                 SafetyCarBlinkTimer.Stop();
                 label_safetyCar.Invoke((MethodInvoker)delegate ()
                 {
-                    label_safetyCar.Text = "";
+                    label_safetyCar.Text = "SC";
                     label_safetyCar.BackColor = Color.Transparent;
+                    label_safetyCar.ForeColor = Color.Black;
                 });
             }
 

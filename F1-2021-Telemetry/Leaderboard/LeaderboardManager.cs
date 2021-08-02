@@ -18,6 +18,7 @@ namespace F1_2021_Telemetry
         private CarStatusPacket CarStatusPacket;
         private LapPacket LastLapPacket;
         private SessionPacket SessionPacket;
+        private CarDamagePacket CarDamagePacket;
         private SessionHistoryPacket[] SessionHistoryPackets;
 
         long[,] DriverTimestampOfDistances = null; // 20 drivers, Laps * TrackLength / 1/Accuracy
@@ -68,12 +69,13 @@ namespace F1_2021_Telemetry
         /// <param name="lapPacket"></param>
         /// <param name="carStatusPacket"></param>
         /// <param name="sessionPacket"></param>
-        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket)
+        public void UpdateData(ParticipantPacket participantPacket, LapPacket lapPacket, CarStatusPacket carStatusPacket, SessionPacket sessionPacket, CarDamagePacket carDamagePacket)
         {
             this.LapPacket = lapPacket;
             this.ParticipantPacket = participantPacket;
             this.SessionPacket = sessionPacket;
             this.CarStatusPacket = carStatusPacket;
+            this.CarDamagePacket = carDamagePacket;
 
             if (sessionPacket.SessionTypeMode == SessionPacket.SessionType.Race) // If session type is 'Race' compute distances
             {
@@ -231,6 +233,9 @@ namespace F1_2021_Telemetry
                 driver.DrsAllowed = this.CarStatusPacket.FieldCarStatusData[i].DrsAllowed;
 
                 driver.TimePenaltiesInSeconds = this.LapPacket.FieldLapData[i].Penalties;
+
+                driver.frontWingDamageLeft = this.CarDamagePacket.FieldCarStatusData[i].frontWingDamageLeft;
+                driver.frontWingDamageRight = this.CarDamagePacket.FieldCarStatusData[i].frontWingDamageRight;
 
                 leaderboard.SetDriverToPosition(driver.CarPosition, driver); // Set driver on leaderboard to right position                
             }

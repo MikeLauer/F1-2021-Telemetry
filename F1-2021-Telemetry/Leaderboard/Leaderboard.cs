@@ -102,7 +102,10 @@ namespace F1_2021_Telemetry
 
         public float LapDistance = 0;
 
-        public byte TimePenaltiesInSeconds = 0;       
+        public byte TimePenaltiesInSeconds = 0;
+
+        public byte frontWingDamageLeft = 0;
+        public byte frontWingDamageRight = 0;
 
         public void SetTeamColor(int teamIndex)
         {

@@ -66,6 +66,7 @@
     <Compile Include="Deserializer\Enums\Track.cs" />
     <Compile Include="Deserializer\Enums\TractionControlLevel.cs" />
     <Compile Include="Deserializer\Enums\TyreCompound.cs" />
+    <Compile Include="Deserializer\Packets\CarDamagePacket.cs" />
     <Compile Include="Deserializer\Packets\CarStatusPacket.cs" />
     <Compile Include="Deserializer\Packets\LapPacket.cs" />
     <Compile Include="Deserializer\Packets\Packet.cs" />

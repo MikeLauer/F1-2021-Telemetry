@@ -108,6 +108,9 @@ namespace F1_2021_Telemetry
             this.gp_pitStop = new System.Windows.Forms.GroupBox();
             this.gb_gaps = new System.Windows.Forms.GroupBox();
             this.gb_sessionInfo = new System.Windows.Forms.GroupBox();
+            this.label_frontWingDamageRight = new System.Windows.Forms.Label();
+            this.label_frontWingDamageLeft = new System.Windows.Forms.Label();
+            this.label_text_frontWingDamage = new System.Windows.Forms.Label();
             this.label_text_session = new System.Windows.Forms.Label();
             this.label_session = new System.Windows.Forms.Label();
             this.label_theoredicalBestLap = new System.Windows.Forms.Label();
@@ -744,6 +747,9 @@ namespace F1_2021_Telemetry
             // gb_sessionInfo
             // 
             this.gb_sessionInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.gb_sessionInfo.Controls.Add(this.label_frontWingDamageRight);
+            this.gb_sessionInfo.Controls.Add(this.label_frontWingDamageLeft);
+            this.gb_sessionInfo.Controls.Add(this.label_text_frontWingDamage);
             this.gb_sessionInfo.Controls.Add(this.label_text_session);
             this.gb_sessionInfo.Controls.Add(this.label_session);
             this.gb_sessionInfo.Controls.Add(this.label_theoredicalBestLap);
@@ -762,6 +768,39 @@ namespace F1_2021_Telemetry
             this.gb_sessionInfo.TabIndex = 70;
             this.gb_sessionInfo.TabStop = false;
             this.gb_sessionInfo.Text = "Session Info";
+            // 
+            // label_frontWingDamageRight
+            // 
+            this.label_frontWingDamageRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_frontWingDamageRight.ForeColor = System.Drawing.Color.Lime;
+            this.label_frontWingDamageRight.Location = new System.Drawing.Point(276, 188);
+            this.label_frontWingDamageRight.Name = "label_frontWingDamageRight";
+            this.label_frontWingDamageRight.Size = new System.Drawing.Size(60, 24);
+            this.label_frontWingDamageRight.TabIndex = 48;
+            this.label_frontWingDamageRight.Text = "0%";
+            this.label_frontWingDamageRight.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label_frontWingDamageLeft
+            // 
+            this.label_frontWingDamageLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_frontWingDamageLeft.ForeColor = System.Drawing.Color.Lime;
+            this.label_frontWingDamageLeft.Location = new System.Drawing.Point(210, 188);
+            this.label_frontWingDamageLeft.Name = "label_frontWingDamageLeft";
+            this.label_frontWingDamageLeft.Size = new System.Drawing.Size(60, 24);
+            this.label_frontWingDamageLeft.TabIndex = 47;
+            this.label_frontWingDamageLeft.Text = "0%";
+            this.label_frontWingDamageLeft.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label_text_frontWingDamage
+            // 
+            this.label_text_frontWingDamage.AutoSize = true;
+            this.label_text_frontWingDamage.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_text_frontWingDamage.ForeColor = System.Drawing.Color.White;
+            this.label_text_frontWingDamage.Location = new System.Drawing.Point(20, 188);
+            this.label_text_frontWingDamage.Name = "label_text_frontWingDamage";
+            this.label_text_frontWingDamage.Size = new System.Drawing.Size(184, 24);
+            this.label_text_frontWingDamage.TabIndex = 46;
+            this.label_text_frontWingDamage.Text = "Front Wing Damage:";
             // 
             // label_text_session
             // 
@@ -789,7 +828,7 @@ namespace F1_2021_Telemetry
             // 
             this.label_theoredicalBestLap.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_theoredicalBestLap.ForeColor = System.Drawing.Color.White;
-            this.label_theoredicalBestLap.Location = new System.Drawing.Point(219, 163);
+            this.label_theoredicalBestLap.Location = new System.Drawing.Point(219, 136);
             this.label_theoredicalBestLap.Name = "label_theoredicalBestLap";
             this.label_theoredicalBestLap.Size = new System.Drawing.Size(97, 24);
             this.label_theoredicalBestLap.TabIndex = 43;
@@ -801,7 +840,7 @@ namespace F1_2021_Telemetry
             this.label_text_theoredicalBestLap.AutoSize = true;
             this.label_text_theoredicalBestLap.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_text_theoredicalBestLap.ForeColor = System.Drawing.Color.White;
-            this.label_text_theoredicalBestLap.Location = new System.Drawing.Point(20, 163);
+            this.label_text_theoredicalBestLap.Location = new System.Drawing.Point(20, 136);
             this.label_text_theoredicalBestLap.Name = "label_text_theoredicalBestLap";
             this.label_text_theoredicalBestLap.Size = new System.Drawing.Size(193, 24);
             this.label_text_theoredicalBestLap.TabIndex = 42;
@@ -883,7 +922,7 @@ namespace F1_2021_Telemetry
             this.gb_weatherForecast.ForeColor = System.Drawing.Color.White;
             this.gb_weatherForecast.Location = new System.Drawing.Point(876, 795);
             this.gb_weatherForecast.Name = "gb_weatherForecast";
-            this.gb_weatherForecast.Size = new System.Drawing.Size(312, 234);
+            this.gb_weatherForecast.Size = new System.Drawing.Size(292, 234);
             this.gb_weatherForecast.TabIndex = 74;
             this.gb_weatherForecast.TabStop = false;
             this.gb_weatherForecast.Text = "Weather Forecast";
@@ -893,7 +932,7 @@ namespace F1_2021_Telemetry
             this.label_weatherForecast0Min.AutoSize = true;
             this.label_weatherForecast0Min.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_weatherForecast0Min.ForeColor = System.Drawing.Color.White;
-            this.label_weatherForecast0Min.Location = new System.Drawing.Point(169, 28);
+            this.label_weatherForecast0Min.Location = new System.Drawing.Point(162, 28);
             this.label_weatherForecast0Min.Name = "label_weatherForecast0Min";
             this.label_weatherForecast0Min.Size = new System.Drawing.Size(34, 24);
             this.label_weatherForecast0Min.TabIndex = 60;
@@ -926,7 +965,7 @@ namespace F1_2021_Telemetry
             this.label_weatherForecast30Min.AutoSize = true;
             this.label_weatherForecast30Min.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_weatherForecast30Min.ForeColor = System.Drawing.Color.White;
-            this.label_weatherForecast30Min.Location = new System.Drawing.Point(169, 168);
+            this.label_weatherForecast30Min.Location = new System.Drawing.Point(162, 168);
             this.label_weatherForecast30Min.Name = "label_weatherForecast30Min";
             this.label_weatherForecast30Min.Size = new System.Drawing.Size(34, 24);
             this.label_weatherForecast30Min.TabIndex = 57;
@@ -937,7 +976,7 @@ namespace F1_2021_Telemetry
             this.label_weatherForecast15Min.AutoSize = true;
             this.label_weatherForecast15Min.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_weatherForecast15Min.ForeColor = System.Drawing.Color.White;
-            this.label_weatherForecast15Min.Location = new System.Drawing.Point(169, 136);
+            this.label_weatherForecast15Min.Location = new System.Drawing.Point(162, 136);
             this.label_weatherForecast15Min.Name = "label_weatherForecast15Min";
             this.label_weatherForecast15Min.Size = new System.Drawing.Size(34, 24);
             this.label_weatherForecast15Min.TabIndex = 56;
@@ -948,7 +987,7 @@ namespace F1_2021_Telemetry
             this.label_weatherForecast10Min.AutoSize = true;
             this.label_weatherForecast10Min.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_weatherForecast10Min.ForeColor = System.Drawing.Color.White;
-            this.label_weatherForecast10Min.Location = new System.Drawing.Point(169, 104);
+            this.label_weatherForecast10Min.Location = new System.Drawing.Point(162, 104);
             this.label_weatherForecast10Min.Name = "label_weatherForecast10Min";
             this.label_weatherForecast10Min.Size = new System.Drawing.Size(34, 24);
             this.label_weatherForecast10Min.TabIndex = 55;
@@ -959,7 +998,7 @@ namespace F1_2021_Telemetry
             this.label_weatherForecast5Min.AutoSize = true;
             this.label_weatherForecast5Min.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_weatherForecast5Min.ForeColor = System.Drawing.Color.White;
-            this.label_weatherForecast5Min.Location = new System.Drawing.Point(169, 72);
+            this.label_weatherForecast5Min.Location = new System.Drawing.Point(162, 72);
             this.label_weatherForecast5Min.Name = "label_weatherForecast5Min";
             this.label_weatherForecast5Min.Size = new System.Drawing.Size(34, 24);
             this.label_weatherForecast5Min.TabIndex = 54;
@@ -1088,7 +1127,7 @@ namespace F1_2021_Telemetry
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.lapTimeChart.Series.Add(series1);
-            this.lapTimeChart.Size = new System.Drawing.Size(396, 209);
+            this.lapTimeChart.Size = new System.Drawing.Size(416, 209);
             this.lapTimeChart.TabIndex = 75;
             this.lapTimeChart.Text = "chart1";
             // 
@@ -1097,10 +1136,10 @@ namespace F1_2021_Telemetry
             this.gb_lapTimes.Controls.Add(this.lapTimeChart);
             this.gb_lapTimes.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gb_lapTimes.ForeColor = System.Drawing.Color.White;
-            this.gb_lapTimes.Location = new System.Drawing.Point(1193, 795);
+            this.gb_lapTimes.Location = new System.Drawing.Point(1173, 795);
             this.gb_lapTimes.MinimumSize = new System.Drawing.Size(11, 234);
             this.gb_lapTimes.Name = "gb_lapTimes";
-            this.gb_lapTimes.Size = new System.Drawing.Size(402, 234);
+            this.gb_lapTimes.Size = new System.Drawing.Size(422, 234);
             this.gb_lapTimes.TabIndex = 76;
             this.gb_lapTimes.TabStop = false;
             this.gb_lapTimes.Text = "Lap Times";
@@ -1425,7 +1464,7 @@ namespace F1_2021_Telemetry
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
-            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.1.0";
+            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.1.1";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
@@ -1550,6 +1589,9 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.Label label_session;
         private System.Windows.Forms.DataVisualization.Charting.Chart lapTimeChart;
         private System.Windows.Forms.GroupBox gb_lapTimes;
+        private System.Windows.Forms.Label label_frontWingDamageRight;
+        private System.Windows.Forms.Label label_frontWingDamageLeft;
+        private System.Windows.Forms.Label label_text_frontWingDamage;
     }
 }
 

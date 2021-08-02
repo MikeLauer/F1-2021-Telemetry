@@ -28,6 +28,8 @@ namespace F1_2021_Telemetry
         private SessionPacket SessionPacket = null;
         private SessionHistoryPacket SessionHistoryPacket = null;
 
+        public CarDamagePacket CarDamagePacket { get; private set; }
+
         public UdpListener(FormMain parent)
         {
             Parent = parent;
@@ -68,7 +70,7 @@ namespace F1_2021_Telemetry
             Packet p = new Packet();
             p.LoadBytes(bytes);
 
-            //Console.WriteLine(p.PacketType + " " + p.FrameIdentifier);
+            Console.WriteLine(p.PacketType + " " + p.FrameIdentifier);
 
             if (p.PacketType == PacketType.Session) // 2/s
             {
@@ -94,6 +96,11 @@ namespace F1_2021_Telemetry
                 CarStatusPacket.LoadBytes(bytes);
                 this.Parent.CarStatusPacket = CarStatusPacket;
                 this.Parent.UpdateData();
+            } else if(p.PacketType == PacketType.CarDamage)
+            {
+                CarDamagePacket = new CarDamagePacket();
+                CarDamagePacket.LoadBytes(bytes);
+                this.Parent.CarDamagePacket = CarDamagePacket;
             }
             else if(p.PacketType == PacketType.SessionHistory) // 1/s (one driver)
             {
