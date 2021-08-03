@@ -49,6 +49,7 @@ namespace F1_2021_Telemetry
         private System.Timers.Timer UnmarkPositionTimer; // unmark colored position changes
         private System.Timers.Timer TimeLeftBlinkTimer; // blink if there is little time left in the session
         private System.Timers.Timer SafetyCarBlinkTimer;
+        private System.Timers.Timer PlayerApproachingTimer;
 
         private Label[] MarshalZoneLabels; // To store all labels and access them in a handy way
         private Label[] RainPercentageLabels;
@@ -106,6 +107,10 @@ namespace F1_2021_Telemetry
             SafetyCarBlinkTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnSafetyCarBlink);
             SafetyCarBlinkTimer.Interval = 500;
 
+            PlayerApproachingTimer = new System.Timers.Timer();
+            PlayerApproachingTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnPlayerApproachingBlink);
+            PlayerApproachingTimer.Interval = 250;
+
             // Insert marshalzone labels in array for easy access later
             MarshalZoneLabels = new Label[21];
             MarshalZoneLabels[0] = label_Mz1;
@@ -158,7 +163,7 @@ namespace F1_2021_Telemetry
             this.UpdateFrequency = freq;
             this.UpdateTableTimer.Stop();
             this.UpdateTableTimer.Interval = (int)(1000 / this.UpdateFrequency);
-            if(this.UdpListener.Running)
+            if (this.UdpListener.Running)
                 this.UpdateTableTimer.Start();
         }
 
@@ -190,7 +195,7 @@ namespace F1_2021_Telemetry
             if (this.LeaderboardManager.IsReady == false) return;
 
             this.UpdateSessionInfo();
-            
+
             Leaderboard leaderboard = LeaderboardManager.getLeaderboard(); // Get Current Leaderboard
             this.LatestLeaderboard = leaderboard;
 
@@ -205,6 +210,7 @@ namespace F1_2021_Telemetry
             for (byte i = 0; i < NumberOfDrivers; i++) // iterate through positions
             {
                 LeaderboardDriver driver = leaderboard.getDriver(i); // Driver in position i
+                if (driver == null) continue;
                 bool driverIsPlayerOrSpactator = this.SessionPacket.IsSpectating == false && driver.Index == this.SessionPacket.PlayerCarIndex ||
                             this.SessionPacket.IsSpectating == true && driver.Index == this.SessionPacket.CarIndexBeingSpectated;
 
@@ -212,23 +218,29 @@ namespace F1_2021_Telemetry
                 {
                     if (driver == null) // If driver i doesn't exist, clear table row
                     {
-                        dataGridView_leaderboard.Rows[i].Cells[0].Style.BackColor = (i % 2 == 0) ? Color.Black : GlobalColorGray; // Color team color field
-                        for (byte k = 0; k < dataGridView_leaderboard.Columns.Count; k++) // Remove text from every cell
-                            dataGridView_leaderboard.Rows[i].Cells[k].Value = "";
+                        dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
+                        {
+                            dataGridView_leaderboard.Rows[i].Cells[0].Style.BackColor = (i % 2 == 0) ? Color.Black : GlobalColorGray; // Color team color field
+                            for (byte k = 0; k < dataGridView_leaderboard.Columns.Count; k++) // Remove text from every cell
+                                dataGridView_leaderboard.Rows[i].Cells[k].Value = "";
+                        });
                     }
                     else
                     {
-                        dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
+                        dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
+                        {
+                            dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
+                            bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && driverIsPlayerOrSpactator);
+                            if (!PerformanceMode) this.ColorDriverRow(driver, this.ParticipantPacket, i, highlight); // Color the information of the driver
+                        });
+
                         if (driverIsPlayerOrSpactator) // Safe position and driver information of player/spectated player
                         {
                             this.UpdateGapLabels(leaderboard, driver, i); // Update labels for gaps
                             this.LapTimeGraph.UpdateData(this.LeaderboardManager.GetSessionHistories(), driver);
                             this.UpdateDamageLabels(driver);
+                            this.UpdatePlayerApproaching(driver);
                         }
-
-
-                        bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && driverIsPlayerOrSpactator);
-                        if (!PerformanceMode) this.ColorDriverRow(driver, this.ParticipantPacket, i, highlight); // Color the information of the driver
                     }
                 }); // end table editing
             }
@@ -392,10 +404,11 @@ namespace F1_2021_Telemetry
             this.label_frontWingDamageLeft.Invoke((MethodInvoker)delegate ()
             {
                 this.label_frontWingDamageLeft.Text = driver.frontWingDamageLeft + "%";
-                if(driver.frontWingDamageLeft == 0)
+                if (driver.frontWingDamageLeft == 0)
                 {
                     this.label_frontWingDamageLeft.ForeColor = Color.LimeGreen;
-                } else
+                }
+                else
                 {
                     this.label_frontWingDamageLeft.ForeColor = Color.Red;
                 }
@@ -415,6 +428,47 @@ namespace F1_2021_Telemetry
             });
         }
 
+        private void UpdatePlayerApproaching(LeaderboardDriver driver)
+        {
+            if (SessionPacket.SessionTypeMode != SessionPacket.SessionType.Race &&
+                SessionPacket.SessionTypeMode != SessionPacket.SessionType.Race2 &&
+                SessionPacket.SessionTypeMode != SessionPacket.SessionType.TimeTrial)
+            {
+                if (this.LapPacket.FieldLapData[driver.Index].CurrentDriverStatus != LapPacket.DriverStatus.InGarage)
+                {
+                    bool aPlayerIsBehind = false;
+                    float selfDistanceOnTrack = LapPacket.FieldLapData[driver.Index].LapDistance;
+                    
+                    if (selfDistanceOnTrack < 0)
+                    {
+                        selfDistanceOnTrack = SessionPacket.TrackLengthMeters + selfDistanceOnTrack;
+                    }
+
+                    for (int i = 0; i < NumberOfDrivers; i++)
+                    {
+                        if (this.LapPacket.FieldLapData[i].CurrentDriverStatus == LapPacket.DriverStatus.FlyingLap) //this.ParticipantPacket.FieldParticipantData[i].IsAiControlled == false && 
+                        {
+                            float playerBehindDistanceOnTrack = LapPacket.FieldLapData[i].LapDistance;
+                            float distanceDifference = selfDistanceOnTrack - playerBehindDistanceOnTrack;
+                            if (playerBehindDistanceOnTrack > 0 && distanceDifference > 0 && distanceDifference < 400.0f)
+                            {
+                                aPlayerIsBehind = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (aPlayerIsBehind)
+                    {
+                        this.PlayerApproachingTimer.Start();
+                        return;
+                    }
+                }
+            }
+            this.PlayerApproachingTimer.Stop();
+            this.ResetPlayerApproachingLabel();
+        }
+
         /// <summary>
         /// Unmark the position change coloring and stop the timer
         /// </summary>
@@ -432,7 +486,7 @@ namespace F1_2021_Telemetry
         /// </summary>
         /// <param name="sessionPacket"></param>
         private void UpdateSessionInfo()
-        {           
+        {
             label_sessionTimeLeft.Invoke((MethodInvoker)delegate ()
             {
                 label_sessionTimeLeft.Text = Utility.formatTimeToMinutes(this.SessionPacket.SessionTimeLeft, false, true); // Set session time left text
@@ -706,6 +760,25 @@ namespace F1_2021_Telemetry
                 label_safetyCar.BackColor = Color.Transparent;
                 label_safetyCar.ForeColor = Color.White;
             }
+        }
+
+        private void OnPlayerApproachingBlink(object sender, ElapsedEventArgs e)
+        {
+            if (label_playerApproaching.BackColor != Color.DarkOrange)
+            {
+                label_playerApproaching.BackColor = Color.DarkOrange;
+            }
+            else
+            {
+                label_playerApproaching.BackColor = Color.Transparent;
+            }
+            label_playerApproaching.ForeColor = Color.White;
+        }
+
+        private void ResetPlayerApproachingLabel()
+        {
+            label_playerApproaching.BackColor = Color.Transparent;
+            label_playerApproaching.ForeColor = Color.Black;
         }
 
         private void numeric_pitstopDelta_ValueChanged(object sender, EventArgs e)

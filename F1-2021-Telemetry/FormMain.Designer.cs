@@ -159,6 +159,8 @@ namespace F1_2021_Telemetry
             this.Tyre = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.PositionDifference = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TimePenalties = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.gb_playerApproaching = new System.Windows.Forms.GroupBox();
+            this.label_playerApproaching = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pb_driverCircle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_pitstopDelta)).BeginInit();
             this.gp_pitStop.SuspendLayout();
@@ -170,6 +172,7 @@ namespace F1_2021_Telemetry
             ((System.ComponentModel.ISupportInitialize)(this.lapTimeChart)).BeginInit();
             this.gb_lapTimes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).BeginInit();
+            this.gb_playerApproaching.SuspendLayout();
             this.SuspendLayout();
             // 
             // label_sessionTimeLeft
@@ -177,9 +180,9 @@ namespace F1_2021_Telemetry
             this.label_sessionTimeLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.label_sessionTimeLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_sessionTimeLeft.ForeColor = System.Drawing.Color.White;
-            this.label_sessionTimeLeft.Location = new System.Drawing.Point(6, 9);
+            this.label_sessionTimeLeft.Location = new System.Drawing.Point(1, 7);
             this.label_sessionTimeLeft.Name = "label_sessionTimeLeft";
-            this.label_sessionTimeLeft.Size = new System.Drawing.Size(121, 41);
+            this.label_sessionTimeLeft.Size = new System.Drawing.Size(130, 44);
             this.label_sessionTimeLeft.TabIndex = 5;
             this.label_sessionTimeLeft.Text = "00:00";
             this.label_sessionTimeLeft.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -503,7 +506,7 @@ namespace F1_2021_Telemetry
             // 
             // button_clearTableSelection
             // 
-            this.button_clearTableSelection.Location = new System.Drawing.Point(1007, 741);
+            this.button_clearTableSelection.Location = new System.Drawing.Point(1185, 741);
             this.button_clearTableSelection.Name = "button_clearTableSelection";
             this.button_clearTableSelection.Size = new System.Drawing.Size(71, 48);
             this.button_clearTableSelection.TabIndex = 35;
@@ -624,7 +627,7 @@ namespace F1_2021_Telemetry
             // button_settings
             // 
             this.button_settings.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_settings.Location = new System.Drawing.Point(1083, 741);
+            this.button_settings.Location = new System.Drawing.Point(1261, 741);
             this.button_settings.Name = "button_settings";
             this.button_settings.Size = new System.Drawing.Size(126, 48);
             this.button_settings.TabIndex = 64;
@@ -1441,12 +1444,36 @@ namespace F1_2021_Telemetry
             this.TimePenalties.Name = "TimePenalties";
             this.TimePenalties.ReadOnly = true;
             // 
+            // gb_playerApproaching
+            // 
+            this.gb_playerApproaching.Controls.Add(this.label_playerApproaching);
+            this.gb_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gb_playerApproaching.ForeColor = System.Drawing.Color.White;
+            this.gb_playerApproaching.Location = new System.Drawing.Point(1007, 736);
+            this.gb_playerApproaching.Name = "gb_playerApproaching";
+            this.gb_playerApproaching.Size = new System.Drawing.Size(173, 53);
+            this.gb_playerApproaching.TabIndex = 72;
+            this.gb_playerApproaching.TabStop = false;
+            // 
+            // label_playerApproaching
+            // 
+            this.label_playerApproaching.BackColor = System.Drawing.Color.Transparent;
+            this.label_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_playerApproaching.ForeColor = System.Drawing.Color.White;
+            this.label_playerApproaching.Location = new System.Drawing.Point(1, 7);
+            this.label_playerApproaching.Name = "label_playerApproaching";
+            this.label_playerApproaching.Size = new System.Drawing.Size(171, 44);
+            this.label_playerApproaching.TabIndex = 5;
+            this.label_playerApproaching.Text = "Player Behind!";
+            this.label_playerApproaching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.gb_playerApproaching);
             this.Controls.Add(this.gb_lapTimes);
             this.Controls.Add(this.gb_weatherForecast);
             this.Controls.Add(this.groupBox2);
@@ -1464,7 +1491,7 @@ namespace F1_2021_Telemetry
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
-            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.1.1";
+            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.1.2";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
@@ -1484,6 +1511,7 @@ namespace F1_2021_Telemetry
             ((System.ComponentModel.ISupportInitialize)(this.lapTimeChart)).EndInit();
             this.gb_lapTimes.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).EndInit();
+            this.gb_playerApproaching.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1592,6 +1620,8 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.Label label_frontWingDamageRight;
         private System.Windows.Forms.Label label_frontWingDamageLeft;
         private System.Windows.Forms.Label label_text_frontWingDamage;
+        private System.Windows.Forms.GroupBox gb_playerApproaching;
+        private System.Windows.Forms.Label label_playerApproaching;
     }
 }
 

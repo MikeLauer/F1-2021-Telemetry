@@ -70,7 +70,7 @@ namespace F1_2021_Telemetry
             Packet p = new Packet();
             p.LoadBytes(bytes);
 
-            Console.WriteLine(p.PacketType + " " + p.FrameIdentifier);
+            //Console.WriteLine(p.PacketType + " " + p.FrameIdentifier);
 
             if (p.PacketType == PacketType.Session) // 2/s
             {
