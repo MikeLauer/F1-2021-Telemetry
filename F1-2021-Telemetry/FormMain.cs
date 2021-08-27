@@ -450,7 +450,7 @@ namespace F1_2021_Telemetry
                         {
                             float playerBehindDistanceOnTrack = LapPacket.FieldLapData[i].LapDistance;
                             float distanceDifference = selfDistanceOnTrack - playerBehindDistanceOnTrack;
-                            if (playerBehindDistanceOnTrack > 0 && distanceDifference > 0 && distanceDifference < 400.0f)
+                            if (playerBehindDistanceOnTrack > 0 && distanceDifference > 0 && distanceDifference < 500.0f)
                             {
                                 aPlayerIsBehind = true;
                                 break;

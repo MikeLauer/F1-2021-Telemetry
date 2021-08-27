@@ -1464,7 +1464,7 @@ namespace F1_2021_Telemetry
             this.label_playerApproaching.Name = "label_playerApproaching";
             this.label_playerApproaching.Size = new System.Drawing.Size(171, 44);
             this.label_playerApproaching.TabIndex = 5;
-            this.label_playerApproaching.Text = "Player Behind!";
+            this.label_playerApproaching.Text = "Driver Behind!";
             this.label_playerApproaching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // FormMain
