@@ -74,7 +74,7 @@ The UI is designed for 1080p screens. Higher resolutions are no problem and the 
 To make this program work, you need to enable UDP output in the telemetry options of the game. Choose 127.0.0.1 (default) for IP and 20777 (default) for port.
 
 ### Credits
-Deserializer for F1 2020 UDP Data from Tim Hanewich: https://github.com/TimHanewich/Codemasters.F1_2020
+Deserializer for F1 2020 UDP Data from [Tim Hanewich](https://github.com/TimHanewich/Codemasters.F1_2020)
 
 
 ### Code Quality Disclaimer
