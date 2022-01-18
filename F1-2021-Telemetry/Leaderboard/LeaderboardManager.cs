@@ -141,12 +141,16 @@ namespace F1_2021_Telemetry
                 LeaderboardDriver driver = new LeaderboardDriver(); // create empty driver
                 driver.Index = i; // Set driver index (index from game order, not position order)
 
+                driver.isAiControlled = this.ParticipantPacket.FieldParticipantData[i].IsAiControlled;
+
                 driver.SetTeamColor(((int)this.ParticipantPacket.FieldParticipantData[i].ManufacturingTeam)); // Set team color
 
                 driver.CarPosition = this.LapPacket.FieldLapData[i].CarPosition; // Set car position
 
                 driver.DriverName = this.ParticipantPacket.FieldParticipantData[i].Name; // Set driver name
                 if(this.ParticipantPacket.FieldParticipantData[i].NetworkId != 255) driver.DriverName += " " + this.ParticipantPacket.FieldParticipantData[i].NetworkId; // Set driver name
+
+                driver.RaceCarNum = this.ParticipantPacket.FieldParticipantData[i].CarRaceNumber;               
 
                 driver.CurrentLapNumber = this.LapPacket.FieldLapData[i].CurrentLapNumber; // Current lap number                
 

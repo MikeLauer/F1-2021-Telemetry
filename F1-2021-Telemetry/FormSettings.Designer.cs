@@ -48,23 +48,41 @@ namespace F1_2021_Telemetry
             this.cb_show_timePenalties = new System.Windows.Forms.CheckBox();
             this.cb_liveTimings = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cb_showWeather = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.rb_updateFrequency_60hz = new System.Windows.Forms.RadioButton();
             this.cb_performanceMode = new System.Windows.Forms.CheckBox();
+            this.rb_updateFrequency_30hz = new System.Windows.Forms.RadioButton();
+            this.rb_updateFrequency_1hz = new System.Windows.Forms.RadioButton();
+            this.rb_updateFrequency_10hz = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.rb_playerHighlight_off = new System.Windows.Forms.RadioButton();
             this.rb_playerHighlight_onlyMe = new System.Windows.Forms.RadioButton();
             this.rb_playerHighlight_everyone = new System.Windows.Forms.RadioButton();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.rb_updateFrequency_1hz = new System.Windows.Forms.RadioButton();
-            this.rb_updateFrequency_10hz = new System.Windows.Forms.RadioButton();
-            this.rb_updateFrequency_30hz = new System.Windows.Forms.RadioButton();
-            this.rb_updateFrequency_60hz = new System.Windows.Forms.RadioButton();
-            this.label1 = new System.Windows.Forms.Label();
-            this.cb_showWeather = new System.Windows.Forms.CheckBox();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.button_loadCustomDriverNames = new System.Windows.Forms.Button();
+            this.button_saveRaceResult = new System.Windows.Forms.Button();
+            this.cb_customDriverNames = new System.Windows.Forms.CheckBox();
+            this.nud_lapTimeGraphNumDriversInFront = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.nud_lapTimeGraphNumDriversBehind = new System.Windows.Forms.NumericUpDown();
+            this.openFileDialog_customDriverNames = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog_raceResult = new System.Windows.Forms.SaveFileDialog();
+            this.label4 = new System.Windows.Forms.Label();
+            this.nud_lapTimeGraphNumberOfLapsToShow = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.groupBox5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumDriversInFront)).BeginInit();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumDriversBehind)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumberOfLapsToShow)).BeginInit();
             this.SuspendLayout();
             // 
             // cb_show_deltaBestInterval
@@ -280,11 +298,11 @@ namespace F1_2021_Telemetry
             // button_save
             // 
             this.button_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_save.Location = new System.Drawing.Point(390, 397);
+            this.button_save.Location = new System.Drawing.Point(390, 452);
             this.button_save.Name = "button_save";
             this.button_save.Size = new System.Drawing.Size(183, 36);
             this.button_save.TabIndex = 78;
-            this.button_save.Text = "Save";
+            this.button_save.Text = "SAVE";
             this.button_save.UseVisualStyleBackColor = true;
             this.button_save.Click += new System.EventHandler(this.button_save_Click);
             // 
@@ -310,9 +328,9 @@ namespace F1_2021_Telemetry
             this.cb_liveTimings.ForeColor = System.Drawing.SystemColors.ControlText;
             this.cb_liveTimings.Location = new System.Drawing.Point(20, 20);
             this.cb_liveTimings.Name = "cb_liveTimings";
-            this.cb_liveTimings.Size = new System.Drawing.Size(114, 17);
+            this.cb_liveTimings.Size = new System.Drawing.Size(111, 17);
             this.cb_liveTimings.TabIndex = 83;
-            this.cb_liveTimings.Text = "Live Sector Timing";
+            this.cb_liveTimings.Text = "Live Sector Times";
             this.cb_liveTimings.UseVisualStyleBackColor = true;
             this.cb_liveTimings.CheckedChanged += new System.EventHandler(this.cb_liveTimings_CheckedChanged);
             // 
@@ -327,6 +345,19 @@ namespace F1_2021_Telemetry
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Information";
             // 
+            // cb_showWeather
+            // 
+            this.cb_showWeather.AutoSize = true;
+            this.cb_showWeather.Checked = true;
+            this.cb_showWeather.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_showWeather.Location = new System.Drawing.Point(20, 43);
+            this.cb_showWeather.Name = "cb_showWeather";
+            this.cb_showWeather.Size = new System.Drawing.Size(97, 17);
+            this.cb_showWeather.TabIndex = 0;
+            this.cb_showWeather.Text = "Show Weather";
+            this.cb_showWeather.UseVisualStyleBackColor = true;
+            this.cb_showWeather.CheckedChanged += new System.EventHandler(this.cb_showWeather_CheckedChanged);
+            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label1);
@@ -337,10 +368,29 @@ namespace F1_2021_Telemetry
             this.groupBox2.Controls.Add(this.rb_updateFrequency_10hz);
             this.groupBox2.Location = new System.Drawing.Point(12, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(372, 193);
+            this.groupBox2.Size = new System.Drawing.Size(372, 127);
             this.groupBox2.TabIndex = 85;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Resources";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(17, 85);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(98, 13);
+            this.label1.TabIndex = 83;
+            this.label1.Text = "Update Frequency:";
+            // 
+            // rb_updateFrequency_60hz
+            // 
+            this.rb_updateFrequency_60hz.AutoSize = true;
+            this.rb_updateFrequency_60hz.Location = new System.Drawing.Point(292, 83);
+            this.rb_updateFrequency_60hz.Name = "rb_updateFrequency_60hz";
+            this.rb_updateFrequency_60hz.Size = new System.Drawing.Size(53, 17);
+            this.rb_updateFrequency_60hz.TabIndex = 4;
+            this.rb_updateFrequency_60hz.Text = "60 Hz";
+            this.rb_updateFrequency_60hz.UseVisualStyleBackColor = true;
             // 
             // cb_performanceMode
             // 
@@ -356,6 +406,38 @@ namespace F1_2021_Telemetry
     "\r\nCPU load by a few percent";
             this.cb_performanceMode.UseVisualStyleBackColor = true;
             this.cb_performanceMode.CheckedChanged += new System.EventHandler(this.cb_performanceMode_CheckedChanged);
+            // 
+            // rb_updateFrequency_30hz
+            // 
+            this.rb_updateFrequency_30hz.AutoSize = true;
+            this.rb_updateFrequency_30hz.Checked = true;
+            this.rb_updateFrequency_30hz.Location = new System.Drawing.Point(233, 83);
+            this.rb_updateFrequency_30hz.Name = "rb_updateFrequency_30hz";
+            this.rb_updateFrequency_30hz.Size = new System.Drawing.Size(53, 17);
+            this.rb_updateFrequency_30hz.TabIndex = 3;
+            this.rb_updateFrequency_30hz.TabStop = true;
+            this.rb_updateFrequency_30hz.Text = "30 Hz";
+            this.rb_updateFrequency_30hz.UseVisualStyleBackColor = true;
+            // 
+            // rb_updateFrequency_1hz
+            // 
+            this.rb_updateFrequency_1hz.AutoSize = true;
+            this.rb_updateFrequency_1hz.Location = new System.Drawing.Point(121, 83);
+            this.rb_updateFrequency_1hz.Name = "rb_updateFrequency_1hz";
+            this.rb_updateFrequency_1hz.Size = new System.Drawing.Size(47, 17);
+            this.rb_updateFrequency_1hz.TabIndex = 0;
+            this.rb_updateFrequency_1hz.Text = "1 Hz";
+            this.rb_updateFrequency_1hz.UseVisualStyleBackColor = true;
+            // 
+            // rb_updateFrequency_10hz
+            // 
+            this.rb_updateFrequency_10hz.AutoSize = true;
+            this.rb_updateFrequency_10hz.Location = new System.Drawing.Point(174, 83);
+            this.rb_updateFrequency_10hz.Name = "rb_updateFrequency_10hz";
+            this.rb_updateFrequency_10hz.Size = new System.Drawing.Size(53, 17);
+            this.rb_updateFrequency_10hz.TabIndex = 1;
+            this.rb_updateFrequency_10hz.Text = "10 Hz";
+            this.rb_updateFrequency_10hz.UseVisualStyleBackColor = true;
             // 
             // groupBox3
             // 
@@ -374,7 +456,7 @@ namespace F1_2021_Telemetry
             this.groupBox3.Controls.Add(this.cb_show_positionDifference);
             this.groupBox3.Controls.Add(this.cb_show_lastLap);
             this.groupBox3.Controls.Add(this.cb_show_gapLeader);
-            this.groupBox3.Location = new System.Drawing.Point(12, 211);
+            this.groupBox3.Location = new System.Drawing.Point(12, 145);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(372, 222);
             this.groupBox3.TabIndex = 86;
@@ -428,75 +510,156 @@ namespace F1_2021_Telemetry
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Highlight Human Players";
             // 
-            // rb_updateFrequency_1hz
+            // groupBox5
             // 
-            this.rb_updateFrequency_1hz.AutoSize = true;
-            this.rb_updateFrequency_1hz.Location = new System.Drawing.Point(121, 83);
-            this.rb_updateFrequency_1hz.Name = "rb_updateFrequency_1hz";
-            this.rb_updateFrequency_1hz.Size = new System.Drawing.Size(47, 17);
-            this.rb_updateFrequency_1hz.TabIndex = 0;
-            this.rb_updateFrequency_1hz.Text = "1 Hz";
-            this.rb_updateFrequency_1hz.UseVisualStyleBackColor = true;
+            this.groupBox5.Controls.Add(this.button_loadCustomDriverNames);
+            this.groupBox5.Controls.Add(this.button_saveRaceResult);
+            this.groupBox5.Controls.Add(this.cb_customDriverNames);
+            this.groupBox5.Location = new System.Drawing.Point(390, 211);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(183, 230);
+            this.groupBox5.TabIndex = 88;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "More Options";
             // 
-            // rb_updateFrequency_10hz
+            // button_loadCustomDriverNames
             // 
-            this.rb_updateFrequency_10hz.AutoSize = true;
-            this.rb_updateFrequency_10hz.Location = new System.Drawing.Point(174, 83);
-            this.rb_updateFrequency_10hz.Name = "rb_updateFrequency_10hz";
-            this.rb_updateFrequency_10hz.Size = new System.Drawing.Size(53, 17);
-            this.rb_updateFrequency_10hz.TabIndex = 1;
-            this.rb_updateFrequency_10hz.Text = "10 Hz";
-            this.rb_updateFrequency_10hz.UseVisualStyleBackColor = true;
+            this.button_loadCustomDriverNames.Location = new System.Drawing.Point(20, 43);
+            this.button_loadCustomDriverNames.Name = "button_loadCustomDriverNames";
+            this.button_loadCustomDriverNames.Size = new System.Drawing.Size(157, 23);
+            this.button_loadCustomDriverNames.TabIndex = 2;
+            this.button_loadCustomDriverNames.Text = "Load Driver Names";
+            this.button_loadCustomDriverNames.UseVisualStyleBackColor = true;
+            this.button_loadCustomDriverNames.Click += new System.EventHandler(this.button_loadCustomDriverNames_Click);
             // 
-            // rb_updateFrequency_30hz
+            // button_saveRaceResult
             // 
-            this.rb_updateFrequency_30hz.AutoSize = true;
-            this.rb_updateFrequency_30hz.Checked = true;
-            this.rb_updateFrequency_30hz.Location = new System.Drawing.Point(233, 83);
-            this.rb_updateFrequency_30hz.Name = "rb_updateFrequency_30hz";
-            this.rb_updateFrequency_30hz.Size = new System.Drawing.Size(53, 17);
-            this.rb_updateFrequency_30hz.TabIndex = 3;
-            this.rb_updateFrequency_30hz.TabStop = true;
-            this.rb_updateFrequency_30hz.Text = "30 Hz";
-            this.rb_updateFrequency_30hz.UseVisualStyleBackColor = true;
+            this.button_saveRaceResult.Location = new System.Drawing.Point(20, 184);
+            this.button_saveRaceResult.Name = "button_saveRaceResult";
+            this.button_saveRaceResult.Size = new System.Drawing.Size(157, 40);
+            this.button_saveRaceResult.TabIndex = 1;
+            this.button_saveRaceResult.Text = "Save Race Result";
+            this.button_saveRaceResult.UseVisualStyleBackColor = true;
+            this.button_saveRaceResult.Click += new System.EventHandler(this.button_saveFinalClassification_Click);
             // 
-            // rb_updateFrequency_60hz
+            // cb_customDriverNames
             // 
-            this.rb_updateFrequency_60hz.AutoSize = true;
-            this.rb_updateFrequency_60hz.Location = new System.Drawing.Point(292, 83);
-            this.rb_updateFrequency_60hz.Name = "rb_updateFrequency_60hz";
-            this.rb_updateFrequency_60hz.Size = new System.Drawing.Size(53, 17);
-            this.rb_updateFrequency_60hz.TabIndex = 4;
-            this.rb_updateFrequency_60hz.Text = "60 Hz";
-            this.rb_updateFrequency_60hz.UseVisualStyleBackColor = true;
+            this.cb_customDriverNames.AutoSize = true;
+            this.cb_customDriverNames.Location = new System.Drawing.Point(20, 20);
+            this.cb_customDriverNames.Name = "cb_customDriverNames";
+            this.cb_customDriverNames.Size = new System.Drawing.Size(128, 17);
+            this.cb_customDriverNames.TabIndex = 0;
+            this.cb_customDriverNames.Text = "Custom Driver Names";
+            this.cb_customDriverNames.UseVisualStyleBackColor = true;
+            this.cb_customDriverNames.CheckedChanged += new System.EventHandler(this.cb_customDriverNames_CheckedChanged);
             // 
-            // label1
+            // nud_lapTimeGraphNumDriversInFront
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(17, 85);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(98, 13);
-            this.label1.TabIndex = 83;
-            this.label1.Text = "Update Frequency:";
+            this.nud_lapTimeGraphNumDriversInFront.Location = new System.Drawing.Point(20, 52);
+            this.nud_lapTimeGraphNumDriversInFront.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumDriversInFront.Name = "nud_lapTimeGraphNumDriversInFront";
+            this.nud_lapTimeGraphNumDriversInFront.Size = new System.Drawing.Size(50, 20);
+            this.nud_lapTimeGraphNumDriversInFront.TabIndex = 1;
+            this.nud_lapTimeGraphNumDriversInFront.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumDriversInFront.ValueChanged += new System.EventHandler(this.nud_lapTimeGraphNumDriversInFront_ValueChanged);
             // 
-            // cb_showWeather
+            // label2
             // 
-            this.cb_showWeather.AutoSize = true;
-            this.cb_showWeather.Checked = true;
-            this.cb_showWeather.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_showWeather.Location = new System.Drawing.Point(20, 43);
-            this.cb_showWeather.Name = "cb_showWeather";
-            this.cb_showWeather.Size = new System.Drawing.Size(97, 17);
-            this.cb_showWeather.TabIndex = 0;
-            this.cb_showWeather.Text = "Show Weather";
-            this.cb_showWeather.UseVisualStyleBackColor = true;
-            this.cb_showWeather.CheckedChanged += new System.EventHandler(this.cb_showWeather_CheckedChanged);
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(76, 55);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Drivers in Front";
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.label4);
+            this.groupBox6.Controls.Add(this.nud_lapTimeGraphNumberOfLapsToShow);
+            this.groupBox6.Controls.Add(this.label3);
+            this.groupBox6.Controls.Add(this.nud_lapTimeGraphNumDriversBehind);
+            this.groupBox6.Controls.Add(this.nud_lapTimeGraphNumDriversInFront);
+            this.groupBox6.Controls.Add(this.label2);
+            this.groupBox6.Location = new System.Drawing.Point(12, 373);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(372, 115);
+            this.groupBox6.TabIndex = 89;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Lap Time Graph";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(76, 84);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(76, 13);
+            this.label3.TabIndex = 4;
+            this.label3.Text = "Drivers Behind";
+            // 
+            // nud_lapTimeGraphNumDriversBehind
+            // 
+            this.nud_lapTimeGraphNumDriversBehind.Location = new System.Drawing.Point(20, 82);
+            this.nud_lapTimeGraphNumDriversBehind.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumDriversBehind.Name = "nud_lapTimeGraphNumDriversBehind";
+            this.nud_lapTimeGraphNumDriversBehind.Size = new System.Drawing.Size(50, 20);
+            this.nud_lapTimeGraphNumDriversBehind.TabIndex = 3;
+            this.nud_lapTimeGraphNumDriversBehind.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumDriversBehind.ValueChanged += new System.EventHandler(this.nud_lapTimeGraphNumDriversBehind_ValueChanged);
+            // 
+            // openFileDialog_customDriverNames
+            // 
+            this.openFileDialog_customDriverNames.FileName = "openFileDialog1";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(76, 24);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(72, 13);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "Laps to Show";
+            // 
+            // nud_lapTimeGraphNumberOfLapsToShow
+            // 
+            this.nud_lapTimeGraphNumberOfLapsToShow.Location = new System.Drawing.Point(20, 22);
+            this.nud_lapTimeGraphNumberOfLapsToShow.Minimum = new decimal(new int[] {
+            4,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumberOfLapsToShow.Name = "nud_lapTimeGraphNumberOfLapsToShow";
+            this.nud_lapTimeGraphNumberOfLapsToShow.Size = new System.Drawing.Size(50, 20);
+            this.nud_lapTimeGraphNumberOfLapsToShow.TabIndex = 5;
+            this.nud_lapTimeGraphNumberOfLapsToShow.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.nud_lapTimeGraphNumberOfLapsToShow.ValueChanged += new System.EventHandler(this.nud_lapTimeGraphNumberOfLapsToShow_ValueChanged);
             // 
             // FormSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(588, 452);
+            this.ClientSize = new System.Drawing.Size(588, 500);
+            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox3);
@@ -517,6 +680,13 @@ namespace F1_2021_Telemetry
             this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumDriversInFront)).EndInit();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumDriversBehind)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_lapTimeGraphNumberOfLapsToShow)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -554,5 +724,18 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.RadioButton rb_updateFrequency_1hz;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox cb_showWeather;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.CheckBox cb_customDriverNames;
+        private System.Windows.Forms.NumericUpDown nud_lapTimeGraphNumDriversInFront;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.NumericUpDown nud_lapTimeGraphNumDriversBehind;
+        private System.Windows.Forms.Button button_saveRaceResult;
+        private System.Windows.Forms.Button button_loadCustomDriverNames;
+        private System.Windows.Forms.OpenFileDialog openFileDialog_customDriverNames;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog_raceResult;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown nud_lapTimeGraphNumberOfLapsToShow;
     }
 }

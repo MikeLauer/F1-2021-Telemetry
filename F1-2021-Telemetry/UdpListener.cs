@@ -95,7 +95,7 @@ namespace F1_2021_Telemetry
                 CarStatusPacket = new CarStatusPacket();
                 CarStatusPacket.LoadBytes(bytes);
                 this.Parent.CarStatusPacket = CarStatusPacket;
-                this.Parent.UpdateData();
+                this.Parent.UpdateData(); // Inform parent over new data
             } else if(p.PacketType == PacketType.CarDamage)
             {
                 CarDamagePacket = new CarDamagePacket();
@@ -107,6 +107,12 @@ namespace F1_2021_Telemetry
                 SessionHistoryPacket = new SessionHistoryPacket();
                 SessionHistoryPacket.LoadBytes(bytes);
                 Parent.UpdateHistoryPacket(SessionHistoryPacket);
+            }
+            else if (p.PacketType == PacketType.FinalClassification)
+            {
+                FinalClassificationPacket finalClassificationPacket = new FinalClassificationPacket();
+                finalClassificationPacket.LoadBytes(bytes);
+                this.Parent.FinalClassificationPacket = finalClassificationPacket;
             }
         }
     }

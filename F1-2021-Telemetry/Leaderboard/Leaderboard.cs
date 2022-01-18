@@ -58,10 +58,13 @@ namespace F1_2021_Telemetry
 
         public byte Index; // Index of the original order
 
+        public bool isAiControlled = false;
+
         public Color TeamColor;
 
         public byte CarPosition; // Race position
         public string DriverName;
+        public byte RaceCarNum;
         public byte CurrentLapNumber = 0;
 
         public uint BestLapTime = 0;

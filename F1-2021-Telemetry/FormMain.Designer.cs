@@ -136,6 +136,9 @@ namespace F1_2021_Telemetry
             this.label_rainPercentage5Min = new System.Windows.Forms.Label();
             this.lapTimeChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.gb_lapTimes = new System.Windows.Forms.GroupBox();
+            this.gb_playerApproaching = new System.Windows.Forms.GroupBox();
+            this.label_playerApproaching = new System.Windows.Forms.Label();
+            this.saveFileDialog_finalResult = new System.Windows.Forms.SaveFileDialog();
             this.dataGridView_leaderboard = new F1_2021_Telemetry.DataGridViewDoubleBuffered();
             this.Team = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Pos = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -159,8 +162,6 @@ namespace F1_2021_Telemetry
             this.Tyre = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.PositionDifference = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TimePenalties = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.gb_playerApproaching = new System.Windows.Forms.GroupBox();
-            this.label_playerApproaching = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pb_driverCircle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_pitstopDelta)).BeginInit();
             this.gp_pitStop.SuspendLayout();
@@ -171,8 +172,8 @@ namespace F1_2021_Telemetry
             this.gb_weatherForecast.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lapTimeChart)).BeginInit();
             this.gb_lapTimes.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).BeginInit();
             this.gb_playerApproaching.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).BeginInit();
             this.SuspendLayout();
             // 
             // label_sessionTimeLeft
@@ -1147,6 +1148,29 @@ namespace F1_2021_Telemetry
             this.gb_lapTimes.TabStop = false;
             this.gb_lapTimes.Text = "Lap Times";
             // 
+            // gb_playerApproaching
+            // 
+            this.gb_playerApproaching.Controls.Add(this.label_playerApproaching);
+            this.gb_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gb_playerApproaching.ForeColor = System.Drawing.Color.White;
+            this.gb_playerApproaching.Location = new System.Drawing.Point(1007, 736);
+            this.gb_playerApproaching.Name = "gb_playerApproaching";
+            this.gb_playerApproaching.Size = new System.Drawing.Size(173, 53);
+            this.gb_playerApproaching.TabIndex = 72;
+            this.gb_playerApproaching.TabStop = false;
+            // 
+            // label_playerApproaching
+            // 
+            this.label_playerApproaching.BackColor = System.Drawing.Color.Transparent;
+            this.label_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_playerApproaching.ForeColor = System.Drawing.Color.White;
+            this.label_playerApproaching.Location = new System.Drawing.Point(1, 7);
+            this.label_playerApproaching.Name = "label_playerApproaching";
+            this.label_playerApproaching.Size = new System.Drawing.Size(171, 44);
+            this.label_playerApproaching.TabIndex = 5;
+            this.label_playerApproaching.Text = "Driver Behind!";
+            this.label_playerApproaching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // dataGridView_leaderboard
             // 
             this.dataGridView_leaderboard.AllowUserToAddRows = false;
@@ -1444,29 +1468,6 @@ namespace F1_2021_Telemetry
             this.TimePenalties.Name = "TimePenalties";
             this.TimePenalties.ReadOnly = true;
             // 
-            // gb_playerApproaching
-            // 
-            this.gb_playerApproaching.Controls.Add(this.label_playerApproaching);
-            this.gb_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gb_playerApproaching.ForeColor = System.Drawing.Color.White;
-            this.gb_playerApproaching.Location = new System.Drawing.Point(1007, 736);
-            this.gb_playerApproaching.Name = "gb_playerApproaching";
-            this.gb_playerApproaching.Size = new System.Drawing.Size(173, 53);
-            this.gb_playerApproaching.TabIndex = 72;
-            this.gb_playerApproaching.TabStop = false;
-            // 
-            // label_playerApproaching
-            // 
-            this.label_playerApproaching.BackColor = System.Drawing.Color.Transparent;
-            this.label_playerApproaching.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_playerApproaching.ForeColor = System.Drawing.Color.White;
-            this.label_playerApproaching.Location = new System.Drawing.Point(1, 7);
-            this.label_playerApproaching.Name = "label_playerApproaching";
-            this.label_playerApproaching.Size = new System.Drawing.Size(171, 44);
-            this.label_playerApproaching.TabIndex = 5;
-            this.label_playerApproaching.Text = "Driver Behind!";
-            this.label_playerApproaching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1491,9 +1492,9 @@ namespace F1_2021_Telemetry
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
-            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.1.2";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Text = "F1 2021 Leaderboard by Mike Lauer     v1.2.0";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form_FormClosed);
+            this.Load += new System.EventHandler(this.Form_Load);
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.pb_driverCircle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_pitstopDelta)).EndInit();
@@ -1510,8 +1511,8 @@ namespace F1_2021_Telemetry
             this.gb_weatherForecast.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lapTimeChart)).EndInit();
             this.gb_lapTimes.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).EndInit();
             this.gb_playerApproaching.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_leaderboard)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1622,6 +1623,7 @@ namespace F1_2021_Telemetry
         private System.Windows.Forms.Label label_text_frontWingDamage;
         private System.Windows.Forms.GroupBox gb_playerApproaching;
         private System.Windows.Forms.Label label_playerApproaching;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog_finalResult;
     }
 }
 

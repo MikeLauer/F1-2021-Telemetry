@@ -64,7 +64,7 @@ namespace F1_2021_Telemetry
             CustomPitstopDelta = delta;
         }
 
-        public void UseAutomaticPitstopDelta()
+        public void UseRecommendedPitstopDelta()
         {
             CustomPitstopDelta = -1;
         }

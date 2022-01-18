@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using System.Text.Json;
 
 namespace F1_2021_Telemetry
 {
@@ -45,6 +41,9 @@ namespace F1_2021_Telemetry
             cb_show_positionDifference.Checked = leaderboardTable.Columns[20].Visible;
             cb_show_timePenalties.Checked = leaderboardTable.Columns[21].Visible;
 
+            cb_customDriverNames.Checked = this.MainForm.CustomDriverNames;
+            this.UpdateButtonLoadCustomDriverNames();
+
             if (this.MainForm.HighLightOtherPlayers) rb_playerHighlight_everyone.Checked = true;
             else if (this.MainForm.HighlightOwnPlayer) rb_playerHighlight_onlyMe.Checked = true;
             else rb_playerHighlight_off.Checked = true;
@@ -68,6 +67,11 @@ namespace F1_2021_Telemetry
             {
                 this.rb_updateFrequency_60hz.Checked = true;
             }
+
+            int[] lapTimeGraphValues = this.MainForm.GetLapTimeGraphValues();
+            nud_lapTimeGraphNumDriversInFront.Value = lapTimeGraphValues[0];
+            nud_lapTimeGraphNumDriversBehind.Value = lapTimeGraphValues[1];
+            nud_lapTimeGraphNumberOfLapsToShow.Value = lapTimeGraphValues[2];
         }
 
         private void button_save_Click(object sender, EventArgs e)
@@ -87,6 +91,80 @@ namespace F1_2021_Telemetry
             }
             this.MainForm.SetUpdateFrequency(updateFrequency);
             this.Close();
+        }
+
+        private bool LoadCustomDriverNamesFromFile()
+        {
+            openFileDialog_customDriverNames = new OpenFileDialog();
+            openFileDialog_customDriverNames.Filter = "json files (*.json)|*.json|All files (*.*)|*.*";
+            if (openFileDialog_customDriverNames.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog_customDriverNames.FileName;
+                //File.WriteAllText(saveFileDialog_finalResult.FileName, jsonString);
+                string fileContent = File.ReadAllText(filePath);
+                Utility.CustomDriverNamesMap = JsonSerializer.Deserialize<Dictionary<byte, string>>(fileContent);
+                this.MainForm.CustomDriverNames = cb_customDriverNames.Checked;
+                this.UpdateButtonLoadCustomDriverNames();
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+
+        public void FinalClassification()
+        {
+            if (this.MainForm.FinalClassificationPacket == null)
+            {
+                MessageBox.Show("No results available");
+                return;
+            }
+            Utility.FinalClassification fc = new Utility.FinalClassification();
+            fc.Track = this.MainForm.SessionPacket.SessionTrack.ToString();
+
+            Utility.FinalClassificationDriver[] fcd = new Utility.FinalClassificationDriver[this.MainForm.FinalClassificationPacket.NumCars];
+            for (int i = 0; i < this.MainForm.FinalClassificationPacket.NumCars; i++)
+            {
+                Codemasters.F1_2021.FinalClassificationPacket.FinalClassificationData driverData = this.MainForm.FinalClassificationPacket.FieldDriverData[i];
+
+                Utility.FinalClassificationDriver driver = new Utility.FinalClassificationDriver();
+                driver.Name = this.MainForm.ParticipantPacket.FieldParticipantData[i].Name;
+                if (this.MainForm.CustomDriverNames)
+                {
+                    driver.Name = Utility.GetCustomDriverNameFromRaceNumber(this.MainForm.ParticipantPacket.FieldParticipantData[i].CarRaceNumber, this.MainForm.ParticipantPacket.FieldParticipantData[i].Name);
+                }
+                driver.RaceNumber = this.MainForm.ParticipantPacket.FieldParticipantData[i].CarRaceNumber;
+                driver.Position = driverData.Position;
+                driver.NumLaps = driverData.NumLaps;
+                driver.GridPosition = driverData.GridPosition;
+                driver.Points = driverData.Points;
+                driver.NumPitStops = driverData.NumPitStops;
+                driver.ResultStatus = driverData.ResultStatus.ToString();
+                driver.BestLapTimeInMS = driverData.BestLapTimeInMS;
+                driver.TotalRaceTimeInSec = driverData.TotalRaceTimeInSec;
+                driver.PenaltiesTime = driverData.PenaltiesTime;
+                driver.NumPenalties = driverData.NumPenalties;
+                driver.NumTyreStins = driverData.NumTyreStins;
+
+                fcd[driver.Position - 1] = driver;
+            }
+
+            fc.Drivers = fcd;
+
+            saveFileDialog_raceResult = new SaveFileDialog();
+            saveFileDialog_raceResult.Filter = "json files (*.json)|*.json|All files (*.*)|*.*";
+            saveFileDialog_raceResult.FileName = this.MainForm.SessionPacket.SessionTrack.ToString() + "_" + DateTime.Now;
+            if (saveFileDialog_raceResult.ShowDialog() == DialogResult.OK)
+            {
+                string jsonString = JsonSerializer.Serialize(fc);
+                File.WriteAllText(saveFileDialog_raceResult.FileName, jsonString);
+            }
+
+        }
+
+        private void SetLapTimeGraphValues()
+        {
+            this.MainForm.SetLapTimeGraphValues((int) nud_lapTimeGraphNumDriversInFront.Value, (int) nud_lapTimeGraphNumDriversBehind.Value, (int) nud_lapTimeGraphNumberOfLapsToShow.Value);
         }
 
         private void cb_show_lapNumber_CheckedChanged(object sender, EventArgs e)
@@ -212,5 +290,56 @@ namespace F1_2021_Telemetry
         {
             this.MainForm.SetWeatherVisibility(cb_showWeather.Checked);
         }
+
+        private void cb_customDriverNames_CheckedChanged(object sender, EventArgs e)
+        {
+            button_loadCustomDriverNames.Enabled = cb_customDriverNames.Checked;
+
+            // Automatically open file dialog if no data is available
+            if(Utility.CustomDriverNamesMap == null)
+            {
+                this.LoadCustomDriverNamesFromFile();
+            }
+
+            if (cb_customDriverNames.Checked && Utility.CustomDriverNamesMap != null)
+            {
+                this.MainForm.CustomDriverNames = true;
+            }
+            else { 
+                this.MainForm.CustomDriverNames = false;
+            }
+        }
+
+        private void nud_lapTimeGraphNumDriversInFront_ValueChanged(object sender, EventArgs e)
+        {
+            this.SetLapTimeGraphValues();
+        }
+
+        private void nud_lapTimeGraphNumDriversBehind_ValueChanged(object sender, EventArgs e)
+        {
+            this.SetLapTimeGraphValues();
+        }
+        private void nud_lapTimeGraphNumberOfLapsToShow_ValueChanged(object sender, EventArgs e)
+        {
+            this.SetLapTimeGraphValues();
+        }
+
+        private void button_saveFinalClassification_Click(object sender, EventArgs e)
+        {
+            //this.MainForm.FinalClassification();
+            this.FinalClassification();
+        }
+
+        private void UpdateButtonLoadCustomDriverNames()
+        {
+            button_loadCustomDriverNames.Enabled = cb_customDriverNames.Checked;
+            button_loadCustomDriverNames.BackColor = (Utility.CustomDriverNamesMap == null) ? System.Drawing.Color.Orange : System.Drawing.Color.LightGreen;
+        }
+
+        private void button_loadCustomDriverNames_Click(object sender, EventArgs e)
+        {
+            this.LoadCustomDriverNamesFromFile();
+        }
+
     }
 }

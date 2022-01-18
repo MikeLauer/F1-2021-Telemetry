@@ -1,18 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Threading;
-using System.Runtime.InteropServices;
 using Codemasters.F1_2021;
 using System.Timers;
-using System.Reflection;
-using System.Windows.Forms.DataVisualization.Charting;
 
 namespace F1_2021_Telemetry
 {
@@ -35,6 +26,7 @@ namespace F1_2021_Telemetry
         public ParticipantPacket ParticipantPacket;
         public CarStatusPacket CarStatusPacket;
         public CarDamagePacket CarDamagePacket;
+        public FinalClassificationPacket FinalClassificationPacket;
 
         private LeaderboardManager LeaderboardManager; // leadboard table
         public Leaderboard LatestLeaderboard = null;
@@ -62,19 +54,26 @@ namespace F1_2021_Telemetry
         public bool HighlightOwnPlayer = true;
         public bool HighLightOtherPlayers = true;
         public bool ShowWeather = true;
+        public bool CustomDriverNames = false;
 
         public FormMain()
         {
             InitializeComponent();
 
             LeaderboardManager = new LeaderboardManager();
-            DriverCircle = new DriverCircle(this, pb_driverCircle);
-            UdpListener = new UdpListener(this); // Create UDP listener
 
+            // Create UDP listener
+            UdpListener = new UdpListener(this);
+
+            // Create the driver cirlce
+            DriverCircle = new DriverCircle(this, pb_driverCircle);
+
+            // Timer that updates the table
             UpdateTableTimer = new System.Timers.Timer();
             UpdateTableTimer.Interval = (int)(1000 / this.UpdateFrequency);
             UpdateTableTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTable);
 
+            // Chart for lap times
             this.LapTimeGraph = new LapTimeGraph(this, this.lapTimeChart);
 
             // Initialize leaderboard table
@@ -107,6 +106,7 @@ namespace F1_2021_Telemetry
             SafetyCarBlinkTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnSafetyCarBlink);
             SafetyCarBlinkTimer.Interval = 500;
 
+            // Timer to blink if a player is approaching from behind (useful in Quali)
             PlayerApproachingTimer = new System.Timers.Timer();
             PlayerApproachingTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnPlayerApproachingBlink);
             PlayerApproachingTimer.Interval = 250;
@@ -135,6 +135,7 @@ namespace F1_2021_Telemetry
             MarshalZoneLabels[19] = label_Mz20;
             MarshalZoneLabels[20] = label_Mz21;
 
+            // Insert rain percentage labels in array for easy access
             RainPercentageLabels = new Label[5];
             RainPercentageLabels[0] = label_rainPercentage0Min;
             RainPercentageLabels[1] = label_rainPercentage5Min;
@@ -142,6 +143,7 @@ namespace F1_2021_Telemetry
             RainPercentageLabels[3] = label_rainPercentage15Min;
             RainPercentageLabels[4] = label_rainPercentage30Min;
 
+            // Insert weather forecast labels in array for easy access
             WeatherForecastLabels = new Label[5];
             WeatherForecastLabels[0] = label_weatherForecast0Min;
             WeatherForecastLabels[1] = label_weatherForecast5Min;
@@ -152,12 +154,15 @@ namespace F1_2021_Telemetry
 
             toolTip_performanceMode.SetToolTip(this.button_pitstopDeltaAuto, "Sets delta to recommended for current track.\nNot updated to F1-2021 !");
 
-
             // STARTING
             UdpListener.Start();
             UpdateTableTimer.Start();
         }
 
+        /// <summary>
+        /// Set the frequency the table should be updated with
+        /// </summary>
+        /// <param name="freq"></param>
         public void SetUpdateFrequency(int freq)
         {
             this.UpdateFrequency = freq;
@@ -177,28 +182,44 @@ namespace F1_2021_Telemetry
             return this.dataGridView_leaderboard;
         }
 
+        /// <summary>
+        /// Update the data: Packages have been set and can now be processed
+        /// </summary>
         public void UpdateData()
         {
             if (this.LapPacket == null || this.ParticipantPacket == null || this.SessionPacket == null || this.CarStatusPacket == null || this.CarDamagePacket == null) return;
 
+            // If new session
             if (this.CurrentSessionType != this.SessionPacket.SessionTypeMode)
             {
+                dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
+                {
+                    this.ClearTable();
+                });
                 this.CurrentSessionType = this.SessionPacket.SessionTypeMode;
                 this.LeaderboardManager.InitSessionInfo(NumberOfDrivers, this.SessionPacket.TotalLapsInRace, this.SessionPacket.TrackLengthMeters);
             }
 
+            // Hand data to the leaderboardManager
             LeaderboardManager.UpdateData(this.ParticipantPacket, this.LapPacket, this.CarStatusPacket, this.SessionPacket, this.CarDamagePacket); // Update the LeaderboardManager                        
         }
 
+        /// <summary>
+        /// Event the timer calls to update the table contents
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UpdateTable(object sender, EventArgs e)
         {
             if (this.LeaderboardManager.IsReady == false) return;
 
+            // Update session related information (weather, track, etc.)
             this.UpdateSessionInfo();
 
             Leaderboard leaderboard = LeaderboardManager.getLeaderboard(); // Get Current Leaderboard
             this.LatestLeaderboard = leaderboard;
 
+            // Set theoredical best lap, if available
             if (leaderboard.TheoredicalBestLap != 0)
             {
                 label_theoredicalBestLap.Invoke((MethodInvoker)delegate ()
@@ -207,10 +228,16 @@ namespace F1_2021_Telemetry
                 });
             }
 
-            for (byte i = 0; i < NumberOfDrivers; i++) // iterate through positions
+            for (byte i = 0; i < NumberOfDrivers; i++) // Iterate through positions
             {
                 LeaderboardDriver driver = leaderboard.getDriver(i); // Driver in position i
                 if (driver == null) continue;
+
+                // Exchange driver names if configured
+                if (CustomDriverNames)
+                    driver.DriverName = Utility.GetCustomDriverNameFromRaceNumber(driver.RaceCarNum, driver.DriverName);
+
+                // Bool whether the driver_i is the player/spectator
                 bool driverIsPlayerOrSpactator = this.SessionPacket.IsSpectating == false && driver.Index == this.SessionPacket.PlayerCarIndex ||
                             this.SessionPacket.IsSpectating == true && driver.Index == this.SessionPacket.CarIndexBeingSpectated;
 
@@ -218,21 +245,19 @@ namespace F1_2021_Telemetry
                 {
                     if (driver == null) // If driver i doesn't exist, clear table row
                     {
-                        dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
-                        {
-                            dataGridView_leaderboard.Rows[i].Cells[0].Style.BackColor = (i % 2 == 0) ? Color.Black : GlobalColorGray; // Color team color field
-                            for (byte k = 0; k < dataGridView_leaderboard.Columns.Count; k++) // Remove text from every cell
-                                dataGridView_leaderboard.Rows[i].Cells[k].Value = "";
-                        });
+                        this.ClearTableRow(i);
                     }
                     else
                     {
-                        dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
+                        //dataGridView_leaderboard.Invoke((MethodInvoker)delegate () // Start table editing
+                        //{
+                        dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
+                        if (!PerformanceMode)
                         {
-                            dataGridView_leaderboard.Rows[i].SetValues(driver.getDataAsArray()); // Set leaderboard values to table                                                                                        
                             bool highlight = HighLightOtherPlayers || (HighlightOwnPlayer && driverIsPlayerOrSpactator);
-                            if (!PerformanceMode) this.ColorDriverRow(driver, this.ParticipantPacket, i, highlight); // Color the information of the driver
-                        });
+                            this.ColorDriverRow(driver, i, highlight); // Color the information of the driver
+                        }
+                        //});
 
                         if (driverIsPlayerOrSpactator) // Safe position and driver information of player/spectated player
                         {
@@ -258,14 +283,14 @@ namespace F1_2021_Telemetry
         /// <param name="driver"></param>
         /// <param name="participantPacket"></param>
         /// <param name="index"></param>
-        private void ColorDriverRow(LeaderboardDriver driver, ParticipantPacket participantPacket, int index, bool highlightPlayer = false)
+        private void ColorDriverRow(LeaderboardDriver driver, int index, bool highlightPlayer = false)
         {
             Color BlackOrGray = (index % 2 == 0) ? Color.Black : GlobalColorGray;
             DataGridViewRow driversRow = dataGridView_leaderboard.Rows[index];
 
             driversRow.Cells[0].Style.BackColor = driver.TeamColor; // Color the team color cell
 
-            if (participantPacket.FieldParticipantData[driver.Index].IsAiControlled == false && highlightPlayer) // Driver is human player and should be highlighted
+            if (driver.isAiControlled == false && highlightPlayer) // Driver is human player and should be highlighted
             {
                 Color driverBackColor = Color.FromArgb((int)(driver.TeamColor.R * 0.5f), (int)(driver.TeamColor.G * 0.5f), (int)(driver.TeamColor.B * 0.5f)); // 50% of team color
 
@@ -399,6 +424,10 @@ namespace F1_2021_Telemetry
 
         }
 
+        /// <summary>
+        /// Updates the labels for front wing damage
+        /// </summary>
+        /// <param name="driver"></param>
         private void UpdateDamageLabels(LeaderboardDriver driver)
         {
             this.label_frontWingDamageLeft.Invoke((MethodInvoker)delegate ()
@@ -428,22 +457,29 @@ namespace F1_2021_Telemetry
             });
         }
 
+        /// <summary>
+        /// Update the notification for a driver behind (only in practice, qualifying)
+        /// </summary>
+        /// <param name="driver"></param>
         private void UpdatePlayerApproaching(LeaderboardDriver driver)
         {
+            // Only in practice and qualifying session because if outlaps
             if (SessionPacket.SessionTypeMode != SessionPacket.SessionType.Race &&
                 SessionPacket.SessionTypeMode != SessionPacket.SessionType.Race2 &&
                 SessionPacket.SessionTypeMode != SessionPacket.SessionType.TimeTrial)
             {
-                if (this.LapPacket.FieldLapData[driver.Index].CurrentDriverStatus != LapPacket.DriverStatus.InGarage)
+                if (this.LapPacket.FieldLapData[driver.Index].CurrentDriverStatus != LapPacket.DriverStatus.InGarage) // If not in box
                 {
-                    bool aPlayerIsBehind = false;
+                    bool aDriverIsBehind = false;
                     float selfDistanceOnTrack = LapPacket.FieldLapData[driver.Index].LapDistance;
-                    
+
+                    // Normalizing outlap, because outlap is negative
                     if (selfDistanceOnTrack < 0)
                     {
                         selfDistanceOnTrack = SessionPacket.TrackLengthMeters + selfDistanceOnTrack;
                     }
 
+                    // Check all drivers if someone is behind
                     for (int i = 0; i < NumberOfDrivers; i++)
                     {
                         if (this.LapPacket.FieldLapData[i].CurrentDriverStatus == LapPacket.DriverStatus.FlyingLap) //this.ParticipantPacket.FieldParticipantData[i].IsAiControlled == false && 
@@ -452,13 +488,14 @@ namespace F1_2021_Telemetry
                             float distanceDifference = selfDistanceOnTrack - playerBehindDistanceOnTrack;
                             if (playerBehindDistanceOnTrack > 0 && distanceDifference > 0 && distanceDifference < 500.0f)
                             {
-                                aPlayerIsBehind = true;
+                                aDriverIsBehind = true;
                                 break;
                             }
                         }
                     }
 
-                    if (aPlayerIsBehind)
+                    // If driver is behind, start blinking
+                    if (aDriverIsBehind)
                     {
                         this.PlayerApproachingTimer.Start();
                         return;
@@ -624,16 +661,43 @@ namespace F1_2021_Telemetry
             }
         }
 
-        private void CheckPitstopDelta()
+        private void UseRecommendedPitStopDelta()
         {
             if (this.SessionPacket != null)
             {
-                DriverCircle.UseAutomaticPitstopDelta(); // Tell driver circle to use automatic mode
+                DriverCircle.UseRecommendedPitstopDelta(); // Tell driver circle to use automatic mode
                 float delta = DriverCircle.TrackPitstopDelta[(int)this.SessionPacket.SessionTrack]; // Recommended delta
                 numeric_pitstopDelta.Value = (decimal)delta; // Set input component to recommended delta
             }
         }
 
+        /// <summary>
+        /// Clear the whole table
+        /// </summary>
+        private void ClearTable()
+        {
+            for (byte i = 0; i < NumberOfDrivers; i++) // Iterate through positions
+            {
+                this.ClearTableRow(i);
+            }
+        }
+
+        /// <summary>
+        /// Clear a row in the table
+        /// </summary>
+        /// <param name="i"></param>
+        private void ClearTableRow(int i)
+        {
+            for (byte k = 0; k < dataGridView_leaderboard.Columns.Count; k++)
+            {
+                dataGridView_leaderboard.Rows[i].Cells[k].Value = "";  // Remove text from every cell
+                dataGridView_leaderboard.Rows[i].Cells[k].Style.BackColor = (i % 2 == 0) ? Color.Black : GlobalColorGray; // Remove colors
+            }
+        }
+
+        /// <summary>
+        /// Remove all coloring in the table (performance mode enabled)
+        /// </summary>
         public void ClearTableColoring()
         {
             for (int i = 0; i < dataGridView_leaderboard.Rows.Count; i++)
@@ -694,12 +758,28 @@ namespace F1_2021_Telemetry
             }
         }
 
+        public void SetLapTimeGraphValues(int driversInFront, int driversBehind, int numberOfLaps)
+        {
+            this.LapTimeGraph.NumberDriversInFront = driversInFront;
+            this.LapTimeGraph.NumberDriversBehind = driversBehind;
+            this.LapTimeGraph.NumberOfLapsToShow = numberOfLaps;
+        }
+
+        public int[] GetLapTimeGraphValues()
+        {
+            int[] values = new int[3];
+            values[0] = this.LapTimeGraph.NumberDriversInFront;
+            values[1] = this.LapTimeGraph.NumberDriversBehind;
+            values[2] = this.LapTimeGraph.NumberOfLapsToShow;
+            return values;
+        }
+
         /*
          * UI Events following
          * 
          * */
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Form_Load(object sender, EventArgs e)
         {
             dataGridView_leaderboard.ClearSelection(); // Clear table selection on startup
         }
@@ -712,7 +792,7 @@ namespace F1_2021_Telemetry
         {
             ResizeUi();
         }
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        private void Form_FormClosed(object sender, FormClosedEventArgs e)
         {
             UdpListener.Stop(); // Stop UDP listener (other Thread, importent to close)
         }
@@ -798,7 +878,7 @@ namespace F1_2021_Telemetry
 
         private void button_pitstopDeltaAuto_Click(object sender, EventArgs e)
         {
-            this.CheckPitstopDelta();
+            this.UseRecommendedPitStopDelta();
         }
     }
 }
