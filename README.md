@@ -75,8 +75,3 @@ To make this program work, you need to enable UDP output in the telemetry option
 
 ### Credits
 Deserializer for F1 2020 UDP Data from [Tim Hanewich](https://github.com/TimHanewich/Codemasters.F1_2020)
-
-
-### Code Quality Disclaimer
-Yes, it's not a pretty baby I have there. It was a short time project and I will improve code quality over time.
-I'm open for feedback and suggestions.
